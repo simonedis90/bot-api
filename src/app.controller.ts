@@ -87,6 +87,17 @@ export class AppController {
   }
 
   @ApiHeader({ name: 'x-authentication', required: true })
+  @ApiResponse({
+    type: EventsResponseDTO,
+    isArray: true,
+  })
+  @Get('/ev')
+  async ev(@Req() request) {
+    const events = await this.eventsService.ev(request);
+    return events;
+  }
+
+  @ApiHeader({ name: 'x-authentication', required: true })
   @ApiQuery({
     name: 'pass',
   })

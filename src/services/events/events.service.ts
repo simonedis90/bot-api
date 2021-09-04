@@ -283,4 +283,8 @@ export class EventsService {
     });
     return Promise.resolve(result);
   }
+
+  async ev(request: Request) {
+    return this.betfairService.events(request, ['1']).toPromise();
+  }
 }
