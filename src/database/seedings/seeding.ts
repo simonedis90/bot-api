@@ -14,7 +14,6 @@ import {
   STATS_REPOSITORY,
   TEAM_REPOSITORY,
 } from '../repositories/scraper';
-import { env } from '../../../../scraper-database/dist/main';
 
 export class SeedingData {
   constructor(
@@ -78,7 +77,7 @@ export class SeedingData {
       });
       const data = await this.httpClient
         .get<TeamEntity[]>(
-          env.SCRAPER_SERVICE + '/league?league=' + config.path,
+          '' + '/league?league=' + config.path,
         )
         .toPromise();
       for (const team of data.data) {
@@ -113,7 +112,7 @@ export class SeedingData {
       console.log(config.league);
       try {
         const data = await this.httpClient
-          .get(env.SCRAPER_SERVICE + '/matches', {
+          .get('' + '/matches', {
             params: {
               league: config.path + '/risultati',
               'league-name': config.league,
