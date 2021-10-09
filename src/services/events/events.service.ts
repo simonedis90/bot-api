@@ -195,7 +195,7 @@ export class EventsService {
 
     try {
       const events_ = await this.betfairService
-        .events(request, ['1'], inPlayOnly, competitions)
+        .events(request, ['1'], inPlayOnly, competitions, today)
         .toPromise();
 
       const idsArr = (ids || '').split(',');
@@ -203,11 +203,6 @@ export class EventsService {
         today = false;
       }
       const events = events_
-        .filter((f) =>
-          today
-            ? new Date(f.event.openDate).getDate() === new Date().getDate()
-            : true,
-        )
         .filter((item) => {
           if (ids) {
             return idsArr.find((f) => item.event.id === f);

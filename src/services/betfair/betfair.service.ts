@@ -87,6 +87,7 @@ export class BetfairService {
     types: string[],
     inPlayOnly: boolean = undefined,
     competitionIds: string[] = [],
+    today = false,
   ): Observable<EventsResponseDTO[]> {
     const from = new Date();
     from.setHours(0);
@@ -123,7 +124,14 @@ export class BetfairService {
       req,
     ).pipe(
       map((f) => {
-        return f[0].result;
+        return f[0].result.filter((f) => {
+          const d = new Date();
+          d.setHours(23);
+          d.setMinutes(59);
+          if (today) {
+            return new Date(f.event.openDate) < d;
+          }
+        });
       }),
     );
   }

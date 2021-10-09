@@ -160,6 +160,7 @@ export class AppController {
       [sportId],
       live,
       competitions?.split(','),
+        today
     );
     return events;
   }
