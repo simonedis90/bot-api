@@ -16,6 +16,7 @@ import {
   chunkArrayInGroups,
   bfSingle,
 } from '../../models/betfair';
+import { type } from 'os';
 
 @Injectable()
 export class BetfairService {
@@ -28,8 +29,13 @@ export class BetfairService {
     private configService: ConfigService,
   ) {}
 
-  keepAlive(req: Request): Observable<any> {
-    return this.HttpCustomService.get(this.configService.keepAlive, {}, req);
+  async keepAlive(req: Request): Promise<any> {
+    const result = await this.HttpCustomService.get(
+      this.configService.keepAlive,
+      {},
+      req,
+    );
+    return result;
   }
 
   login(
@@ -76,16 +82,34 @@ export class BetfairService {
     ).pipe(map((f) => f[0].result));
   }
 
-  events(req: Request, types: string[]): Observable<EventsResponseDTO[]> {
+  events(
+    req: Request,
+    types: string[],
+    inPlayOnly: boolean = undefined,
+    competitionIds: string[] = [],
+  ): Observable<EventsResponseDTO[]> {
+    const from = new Date();
+    from.setHours(0);
+    from.setMinutes(0);
+    const to = new Date();
+    to.setHours(23);
+    to.setMinutes(59);
+    const filters: any = {};
+    if (types) {
+      filters.eventTypeIds = types;
+    }
+    if (inPlayOnly === true) {
+      filters.inPlayOnly = true;
+    }
+    if (competitionIds?.length) {
+      filters.competitionIds = competitionIds;
+    }
     const request = [
       {
         jsonrpc: '2.0',
         method: 'SportsAPING/v1.0/listEvents',
         params: {
-          filter: {
-            eventTypeIds: [...types],
-            inPlayOnly: true,
-          },
+          filter: filters,
           marketProjection: ['COMPETITION'],
         },
         id: 1,
@@ -120,6 +144,7 @@ export class BetfairService {
               'OVER_UNDER_35',
               'BOTH_TEAMS_TO_SCORE',
               'MATCH_ODDS',
+              'CORRECT_SCORE',
             ],
             eventIds: [...events.map((f) => f.toString())],
           },
@@ -338,9 +363,9 @@ export class BetfairService {
     }>,
   ) {
     const size = bets[0].size;
-    const diff = 1000 - size;
+    const diff = 5 - size;
     const price = bets[0].price;
-    bets[0].size = 1000;
+    bets[0].size = 5;
     bets[0].price = bets[0].side === 'LAY' ? 1.01 : 1000;
     const response = await this.placeBet(request, bets).toPromise();
     if (response[0].result.status === 'SUCCESS') {
@@ -357,7 +382,35 @@ export class BetfairService {
         bets[0].marketId,
         price,
       ).toPromise();
+      return z;
     }
+  }
+
+  async listMarketBook(req: Request, marketId: string): Promise<any> {
+    const params: any = {};
+    if (marketId) {
+      params.marketIds = [marketId];
+    }
+    const request = [
+      {
+        jsonrpc: '2.0',
+        method: 'SportsAPING/v1.0/listCurrentOrders',
+        params: params,
+        id: 1,
+      },
+    ];
+    return this.HttpCustomService.post<any, bf<EventTypeResponse>>(
+      this.configService.basePath,
+      request,
+      {},
+      req,
+    )
+      .pipe(
+        map((f) => {
+          return f;
+        }),
+      )
+      .toPromise();
   }
 }
 

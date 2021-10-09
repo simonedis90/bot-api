@@ -1,6 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { BetfairService } from '../betfair/betfair.service';
-import { chunkArrayInGroups } from '../../models/betfair';
+import { chunkArrayInGroups, IBetFairLiveResult } from '../../models/betfair';
 import {
   EventsResponseDTO,
   MarketDTO,
@@ -9,14 +9,18 @@ import {
 import { EVENT_REPOSITORY } from '../../database/repositories/scraper';
 import { Between, LessThan, MoreThan, Repository } from 'typeorm';
 import { EventEntity } from '../../database/entities/events.entity';
-import {wsServer} from "../../main";
+import { wsServer } from '../../main';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
+let EVENTS;
 
 @Injectable()
 export class EventsService {
   constructor(
     private betfairService: BetfairService,
     @Inject(EVENT_REPOSITORY) public eventRepository: Repository<EventEntity>,
+    private httpClient: HttpService,
   ) {}
 
   async load(request) {
@@ -179,112 +183,170 @@ export class EventsService {
     });
   }
 
-  async loadAndPush(request: Request): Promise<Partial<EventEntity>[]> {
-    const result = [];
-    const events_ = await this.betfairService
-      .events(request, ['1'])
-      .toPromise();
+  async loadAndPush(
+    request: Request,
+    push = true,
+    inPlayOnly = true,
+    today = true,
+    ids: string = null,
+    competitions: string[] = null
+  ): Promise<Partial<EventEntity>[]> {
+    const result: Partial<EventEntity>[] = [];
 
-    const events = events_
-      .sort(
-        (a, b) =>
-          (new Date(a.event.openDate) as any) -
-          (new Date(b.event.openDate) as any),
-      )
-      .filter(
-        (f) => new Date(f.event.openDate).getDate() === new Date().getDate(),
-      );
-
-    const chunk = chunkArrayInGroups<EventsResponseDTO>(events, 100);
-    for (const group of chunk) {
-      const markets = await this.betfairService
-        .markets(
-          request,
-          group.map((f) => f.event.id),
-        )
+    try {
+      const events_ = await this.betfairService
+        .events(request, ['1'], inPlayOnly, competitions)
         .toPromise();
 
-      const marketChunk = chunkArrayInGroups<MarketDTO>(markets, 100);
+      const idsArr = (ids || '').split(',');
+      if(ids){
+        today = false;
+      }
+      const events = events_
+        .filter((f) =>
+          today
+            ? new Date(f.event.openDate).getDate() === new Date().getDate()
+            : true,
+        )
+        .filter((item) => {
+          if (ids) {
+            return idsArr.find((f) => item.event.id === f);
+          }
+          return true;
+        })
+        .sort(
+          (a, b) =>
+            (new Date(a.event.openDate) as any) -
+            (new Date(b.event.openDate) as any),
+        );
 
-      const dict: { [event: number]: MarketPriceDTO[] } = {};
-
-      group.forEach((f) => {
-        dict[f.event.id] = [];
-      });
-
-      for (const market of marketChunk) {
-        const marketPrices = await this.betfairService
-          .marketPrice(
+      const chunk = chunkArrayInGroups<EventsResponseDTO>(events, 100);
+      for (const group of chunk) {
+        const markets = await this.betfairService
+          .markets(
             request,
-            market.map((f) => f.marketId),
+            group.map((f) => f.event.id),
           )
           .toPromise();
 
-        marketPrices.forEach((marketPrice) => {
-          const marketParent = market.find(
-            (f) => f.marketId === marketPrice.marketId,
-          );
-          dict[marketParent.event.id].push(marketPrice);
+        const marketChunk = chunkArrayInGroups<MarketDTO>(markets, 100);
+
+        const dict: { [event: number]: MarketPriceDTO[] } = {};
+
+        group.forEach((f) => {
+          dict[f.event.id] = [];
         });
-      }
 
-      for (const event of group) {
-        try {
-          console.log('start %s', event.event.name);
-          const [hn, an] = event.event.name.split(' v ');
-          const homeTeam = hn;
-          const awayTeam = an;
+        for (const market of marketChunk) {
+          const marketPrices = await this.betfairService
+            .marketPrice(
+              request,
+              market.map((f) => f.marketId),
+            )
+            .toPromise();
 
-          // prende i market di un evento
-          const founded = markets.filter((f) => f.event.id === event.event.id);
-
-          if (!founded || founded.length === 0) {
-            continue;
-          }
-
-          // prende i prezzi per i market dell'evento
-          const prices = dict[event.event.id];
-
-          /**
-           * check per vedere se l'evento é stato giá processato
-           */
-          const oldEvent = await this.eventRepository.findOne({
-            eventId: event.event.id as any,
+          marketPrices.forEach((marketPrice) => {
+            const marketParent = market.find(
+              (f) => f.marketId === marketPrice.marketId,
+            );
+            dict[marketParent.event.id].push(marketPrice);
           });
+        }
 
-          const eventEntity: Partial<EventEntity> = {
-            eventId: event.event.id as any,
-            event: event.event,
-            marketPrices: prices,
-            markets: founded,
-            home: homeTeam,
-            away: awayTeam,
-            matchDate: event.event.openDate,
-            calc: {
-              ft: null,
-              ht: null,
-            },
-          };
-          if (!oldEvent) this.eventRepository.insert(eventEntity).then();
-          else {
-            oldEvent.marketPrices = prices;
-            this.eventRepository.save(oldEvent).then();
+        for (const event of group) {
+          try {
+            const [hn, an] = event.event.name.split(' v ');
+            const homeTeam = hn;
+            const awayTeam = an;
+
+            // prende i market di un evento
+            const founded = markets.filter(
+              (f) => f.event.id === event.event.id,
+            );
+
+            if (!founded || founded.length === 0) {
+              continue;
+            }
+
+            // prende i prezzi per i market dell'evento
+            const prices = dict[event.event.id];
+
+            /**
+             * check per vedere se l'evento é stato giá processato
+             */
+            const oldEvent = await this.eventRepository.findOne({
+              eventId: event.event.id as any,
+            });
+
+            const isLive = new Date(event.event.openDate) <= new Date();
+
+            const eventEntity: Partial<EventEntity> = {
+              eventId: event.event.id as any,
+              event: event.event,
+              marketPrices: prices,
+              startMarketPrices: isLive ? oldEvent?.startMarketPrices : prices,
+              markets: founded,
+              home: homeTeam,
+              away: awayTeam,
+              matchDate: event.event.openDate,
+              calc: {
+                ft: null,
+                ht: null,
+              },
+            };
+            if (!oldEvent) this.eventRepository.insert(eventEntity).then();
+            else {
+              oldEvent.marketPrices = prices;
+              this.eventRepository.save(oldEvent).then();
+            }
+
+            result.push(eventEntity);
+          } catch (ex) {
+            console.log(ex);
           }
-
-          result.push(eventEntity);
-        } catch (ex) {
-          console.log(ex);
         }
       }
+    } catch (er) {
+      console.log('cannot get events', er);
     }
 
-    wsServer.connections.forEach((f) => {
-      f.send(JSON.stringify(result));
-    });
+    if (push) {
+      wsServer.connections.forEach((f) => {
+        f.send(JSON.stringify({ events: result }));
+      });
+
+      result.forEach((item) => {
+        try {
+          this.liveResult(item.eventId)
+            .toPromise()
+            .then((value) => {
+              wsServer.connections.forEach((f) => {
+                f.send(
+                  JSON.stringify({
+                    [item.eventId]: value,
+                  }),
+                );
+              });
+            });
+        } catch (er) {
+          console.log('cannot load ' + item.eventId);
+        }
+      });
+    }
+
+    EVENTS = result;
+
     return Promise.resolve(result);
   }
 
   async ev(request: Request) {
     return this.betfairService.events(request, ['1']).toPromise();
+  }
+
+  liveResult(eventId: number): Observable<IBetFairLiveResult> {
+    const path = `https://ips.betfair.it/inplayservice/v1/eventTimeline?alt=json&eventId=${eventId}&locale=it&productType=EXCHANGE&regionCode=UK`;
+    return this.httpClient
+      .get<IBetFairLiveResult>(path)
+      .pipe(map((d) => d.data));
   }
 }
