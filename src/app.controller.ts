@@ -144,6 +144,15 @@ export class AppController {
     @Query('ids') ids: string = null,
     @Query('competitions') competitions: string,
   ) {
+    if ((withOdds as any) === 'true') {
+      withOdds = Boolean(1);
+    }
+    if ((today as any) === 'true') {
+      today = Boolean(1);
+    }
+    if ((live as any) === 'true') {
+      live = Boolean(1);
+    }
     if (Boolean((withOdds as any) === 'true' ? 1 : 0) === true) {
       const events = await this.eventsService.loadAndPush(
         request,
