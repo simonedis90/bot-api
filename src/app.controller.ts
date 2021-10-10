@@ -153,7 +153,7 @@ export class AppController {
     if ((live as any) === 'true') {
       live = Boolean(1);
     }
-    if (Boolean((withOdds as any) === 'true' ? 1 : 0) === true) {
+    if (withOdds === true) {
       const events = await this.eventsService.loadAndPush(
         request,
         false,
