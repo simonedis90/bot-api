@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { AppService } from 'src/app.service';
 import {
-  EventsResponseDTO,
+  EventsResponseDTO, IBet,
   MarketDTO,
   MarketPriceDTO,
 } from 'src/models/response.dto';
@@ -264,13 +264,7 @@ export class BetfairService {
 
   placeBet(
     request: Request,
-    bets: Array<{
-      marketId: string;
-      selectionId: string;
-      side;
-      price: number;
-      size: number;
-    }>,
+    bets: Array<IBet>,
   ) {
     const requestBfair = bets.map((f, index) => {
       const request = {
@@ -362,13 +356,7 @@ export class BetfairService {
 
   async betLessThan2(
     request: Request,
-    bets: Array<{
-      marketId: string;
-      selectionId: string;
-      side;
-      price: number;
-      size: number;
-    }>,
+    bets: Array<IBet>,
   ) {
     const size = bets[0].size;
     const diff = 5 - size;

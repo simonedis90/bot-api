@@ -1,5 +1,6 @@
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
 import { IMatch } from './scrap';
+import {Instruction, InstructionReport, LimitOrder} from "../services/betfair/betfair.service";
 
 export class LoginResponseDTO {
   @ApiResponseProperty({ type: String })
@@ -75,6 +76,7 @@ export class ICalc {
   ovValues: { 0: number; 1: number; 2: number; un2_5?: number };
   results?: Array<{ result: string; probability: number }>;
 }
+
 export class EventsResponseDTO {
   @ApiResponseProperty({ type: EventDTO })
   event: EventDTO;
@@ -287,4 +289,73 @@ export interface IBetFairLiveResult {
   updateDetails: UpdateDetail[];
   status: string;
   inPlayMatchStatus: string;
+}
+
+export interface IBet {
+  marketId: string;
+  selectionId: string;
+  side: 'LAY' | 'BACK';
+  price: number;
+  size: number;
+}
+
+export class IBetDto {
+  @ApiProperty({ type: String })
+  marketId: string;
+  @ApiProperty({ type: String })
+  selectionId: string;
+  @ApiProperty({ type: String, description: 'LAY or BACK' })
+  side: string;
+  @ApiProperty({ type: Number })
+  price: number;
+  @ApiProperty({ type: Number })
+  size: number;
+}
+
+export class InstructionReportDTO {
+  @ApiProperty({ type: String })
+  betId: string;
+  @ApiProperty({ type: String, description: 'SUCCESS value if bet placed' })
+  status: string;
+  @ApiProperty({ type: Date })
+  placedDate: Date;
+  instruction: Instruction;
+  @ApiProperty({ type: String })
+  orderStatus: string;
+  @ApiProperty({ type: Number })
+  sizeMatched: number;
+  @ApiProperty({ type: Number })
+  averagePriceMatched: number;
+}
+
+
+export class LimitOrderDTO {
+  @ApiProperty({ type: Number })
+  size: number;
+  @ApiProperty({ type: Number })
+  price: number;
+  @ApiProperty({ type: String })
+  persistenceType: string;
+}
+
+export class InstructionDTO {
+  @ApiProperty({ type: String })
+  side: string;
+  @ApiProperty({ type: Number })
+  handicap: number;
+  @ApiProperty({ type: String })
+  orderType: string;
+  @ApiProperty({ type: LimitOrderDTO })
+  limitOrder: LimitOrder;
+  @ApiProperty({ type: Number })
+  selectionId: number;
+}
+
+export class BetResponseDTO {
+  @ApiProperty({ type: String })
+  status: string;
+  @ApiProperty({ type: String })
+  marketId: string;
+  @ApiProperty({ type: InstructionReportDTO, isArray: true })
+  instructionReports: InstructionReportDTO[];
 }

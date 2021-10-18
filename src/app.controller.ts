@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   ForbiddenException,
@@ -13,7 +12,6 @@ import { AppService } from './app.service';
 import { BetfairService } from './services/betfair/betfair.service';
 import { EventsService } from './services/events/events.service';
 import {
-  ApiBearerAuth,
   ApiBody,
   ApiHeader,
   ApiParam,
@@ -22,8 +20,12 @@ import {
 } from '@nestjs/swagger';
 import { LoginResponse } from './models/betfair';
 import {
+  BetResponseDTO,
+  CompetitionDTO,
   EventDTO,
   EventsResponseDTO,
+  IBet,
+  IBetDto,
   LoginResponseDTO,
 } from './models/response.dto';
 import { match_game_new_ } from './services/helper';
@@ -39,9 +41,6 @@ export let EVENTS;
 @ApiHeader({ name: 'x-application', required: true })
 @Controller()
 export class AppController {
-  pushEventsTimeout = 0;
-  pushEventsResultTimeout = 0;
-
   constructor(
     private readonly appService: AppService,
     private readonly bFairService: BetfairService,
@@ -50,6 +49,7 @@ export class AppController {
 
   @ApiResponse({
     type: LoginResponseDTO,
+    status: 200,
   })
   @ApiQuery({
     name: 'username',
@@ -81,7 +81,9 @@ export class AppController {
   }
 
   @Post('matching')
-  @ApiResponse({})
+  @ApiResponse({
+    status: 200,
+  })
   @ApiBody({
     type: MatchingRequestDTO,
   })
@@ -133,6 +135,7 @@ export class AppController {
   @ApiResponse({
     type: EventsResponseDTO,
     isArray: true,
+    status: 200,
   })
   @Get('/events')
   async liveEvents(
@@ -169,7 +172,7 @@ export class AppController {
       [sportId],
       live,
       competitions?.split(','),
-        today
+      today,
     );
     return events;
   }
@@ -183,6 +186,7 @@ export class AppController {
   @ApiResponse({
     type: EventsResponseDTO,
     isArray: true,
+    status: 200,
   })
   @Get('/live-result')
   async liveResult(@Query('ids') ids: string) {
@@ -199,6 +203,7 @@ export class AppController {
   @ApiResponse({
     type: EventsResponseDTO,
     isArray: true,
+    status: 200,
   })
   @Get('/ev')
   async ev(@Req() request) {
@@ -208,8 +213,9 @@ export class AppController {
 
   @ApiHeader({ name: 'x-authentication', required: true })
   @ApiResponse({
-    type: EventsResponseDTO,
+    type: CompetitionDTO,
     isArray: true,
+    status: 200,
   })
   @ApiQuery({ name: 'sportIds', isArray: false, required: false })
   @Get('/competitions')
@@ -222,6 +228,7 @@ export class AppController {
   @ApiResponse({
     type: EventsResponseDTO,
     isArray: true,
+    status: 200,
   })
   @Get('/sports')
   async eventTypes(@Req() request) {
@@ -265,25 +272,30 @@ export class AppController {
 
   @ApiHeader({ name: 'x-authentication', required: true })
   @ApiResponse({
-    type: Boolean,
+    type: BetResponseDTO,
+    isArray: true,
+    status: 200,
+  })
+  @ApiBody({
+    type: IBetDto,
+    isArray: true,
   })
   @Post('/place-bet')
-  async placeBet(@Req() request, @Body() bets) {
-    
-    let size;
-    if ( typeof(bets) === 'object' ) {
-      size = bets.size;
-      bets = [bets]
-    } else {
-      size = bets[0].size;
-    }
+  async placeBet(@Req() request, @Body() bets: IBet[]) {
+    const normalBets = bets.filter((f) => f.size >= 2);
+    const lessThan = bets.filter((f) => f.size < 2);
 
-    if (size < 2) {
-      return this.bFairService.betLessThan2(request, bets);
-    }
-    return await this.bFairService.placeBet(request, bets).toPromise();
+    const nBets = await this.bFairService
+      .placeBet(request, normalBets)
+      .toPromise();
+    const lBets = await this.bFairService.betLessThan2(request, lessThan);
+    return nBets.concat(lBets);
   }
 
+  @ApiParam({
+    name: 'id',
+    type: String,
+  })
   @Get('/markets/:id')
   async markets(@Req() request, @Param('id') marketId) {
     return await this.bFairService.marketPrice(request, [marketId]).toPromise();
@@ -292,6 +304,7 @@ export class AppController {
   @ApiHeader({ name: 'x-authentication', required: true })
   @ApiParam({
     name: 'id',
+    type: String,
   })
   @Get('/market-book/:id')
   async marketBook(@Req() request, @Param('id') marketId) {
@@ -299,9 +312,6 @@ export class AppController {
   }
 
   @ApiHeader({ name: 'x-authentication', required: true })
-  @ApiParam({
-    name: 'id',
-  })
   @Get('/market-book')
   async marketBooks(@Req() request) {
     return await this.bFairService.listMarketBook(request, null);
