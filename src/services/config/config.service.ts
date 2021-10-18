@@ -15,7 +15,7 @@ export class ConfigService {
         this.betFairApi = env.betFairApi;
         this.login = env.login;
         this.production = Boolean(env.production);
-        this.basePath = env.api + env.path;
+        this.basePath = env.api + '/exchange/betting/json-rpc/v1'; // + env.path;
         this.keepAlive = env.keepAlive;
         this.SCRAPER_PARSER = env.SCRAPER_PARSER;
         this.SCRAPER_DATABASE = env.SCRAPER_DATABASE;

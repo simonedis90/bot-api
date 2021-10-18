@@ -86,11 +86,11 @@ export class AppController {
     type: MatchingRequestDTO,
   })
   matching(
-    @Body('lv_src') lv: [][],
+    @Body('lv_src') lv: string, // [][]
     @Body('h_src') h: string,
     @Body('a_src') a: string,
   ) {
-    const result = match_game_new_(lv, h, a);
+    const result = match_game_new_(JSON.parse(lv), h, a);
     return result;
   }
 
@@ -269,7 +269,16 @@ export class AppController {
   })
   @Post('/place-bet')
   async placeBet(@Req() request, @Body() bets) {
-    if (bets[0].size < 2) {
+    
+    let size;
+    if ( typeof(bets) === 'object' ) {
+      size = bets.size;
+      bets = [bets]
+    } else {
+      size = bets[0].size;
+    }
+
+    if (size < 2) {
       return this.bFairService.betLessThan2(request, bets);
     }
     return await this.bFairService.placeBet(request, bets).toPromise();
