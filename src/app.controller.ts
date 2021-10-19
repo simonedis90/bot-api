@@ -17,6 +17,7 @@ import {
   ApiParam,
   ApiQuery,
   ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { LoginResponse } from './models/betfair';
 import {
@@ -29,6 +30,7 @@ import {
   LoginResponseDTO,
 } from './models/response.dto';
 import { match_game_new_ } from './services/helper';
+import { EventTypeResponseDTO } from '../../scraper-database/src/models/response.dto';
 
 class MatchingRequestDTO {
   lv_src: [][];
@@ -39,6 +41,8 @@ class MatchingRequestDTO {
 export let EVENTS;
 
 @ApiHeader({ name: 'x-application', required: true })
+@ApiHeader({ name: 'x-authentication', required: true })
+@ApiTags('Events')
 @Controller()
 export class AppController {
   constructor(
@@ -47,28 +51,6 @@ export class AppController {
     private readonly eventsService: EventsService,
   ) {}
 
-  @ApiResponse({
-    type: LoginResponseDTO,
-    status: 200,
-  })
-  @ApiQuery({
-    name: 'username',
-  })
-  @ApiQuery({
-    name: 'password',
-  })
-  @Get('/login')
-  async login(
-    @Req() request,
-    @Query('username') username,
-    @Query('password') password,
-  ): Promise<LoginResponse> {
-    return await this.bFairService
-      .login(username, password, request)
-      .toPromise();
-  }
-
-  @ApiHeader({ name: 'x-authentication', required: true })
   @ApiQuery({
     name: 'pass',
   })
@@ -96,7 +78,6 @@ export class AppController {
     return result;
   }
 
-  @ApiHeader({ name: 'x-authentication', required: true })
   @ApiQuery({
     name: 'sport',
     required: false,
@@ -199,7 +180,6 @@ export class AppController {
     );
   }
 
-  @ApiHeader({ name: 'x-authentication', required: true })
   @ApiResponse({
     type: EventsResponseDTO,
     isArray: true,
@@ -211,7 +191,6 @@ export class AppController {
     return events;
   }
 
-  @ApiHeader({ name: 'x-authentication', required: true })
   @ApiResponse({
     type: CompetitionDTO,
     isArray: true,
@@ -224,7 +203,6 @@ export class AppController {
     return events;
   }
 
-  @ApiHeader({ name: 'x-authentication', required: true })
   @ApiResponse({
     type: EventsResponseDTO,
     isArray: true,
@@ -236,7 +214,6 @@ export class AppController {
     return events;
   }
 
-  @ApiHeader({ name: 'x-authentication', required: true })
   @ApiQuery({
     name: 'pass',
   })
@@ -270,7 +247,6 @@ export class AppController {
     take().then();
   }
 
-  @ApiHeader({ name: 'x-authentication', required: true })
   @ApiResponse({
     type: BetResponseDTO,
     isArray: true,
@@ -301,7 +277,6 @@ export class AppController {
     return await this.bFairService.marketPrice(request, [marketId]).toPromise();
   }
 
-  @ApiHeader({ name: 'x-authentication', required: true })
   @ApiParam({
     name: 'id',
     type: String,
@@ -311,7 +286,6 @@ export class AppController {
     return await this.bFairService.listMarketBook(request, marketId);
   }
 
-  @ApiHeader({ name: 'x-authentication', required: true })
   @Get('/market-book')
   async marketBooks(@Req() request) {
     return await this.bFairService.listMarketBook(request, null);
@@ -320,5 +294,13 @@ export class AppController {
   @Get('/alive')
   async alive(@Req() request) {
     return await this.bFairService.keepAlive(request);
+  }
+
+  @ApiResponse({
+    type: EventTypeResponseDTO,
+  })
+  @Get('/sports')
+  async sports(@Req() request) {
+    return await this.bFairService.eventTypes(request).toPromise();
   }
 }

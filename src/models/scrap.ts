@@ -1,6 +1,6 @@
 //#region betfair scraping
 
-import { ICalc } from "./response.dto";
+import { ICalc } from './response.dto';
 
 export interface Score {
   home: number;
@@ -12,7 +12,6 @@ export interface Team {
   away: string;
   score: Score;
 }
-
 
 export interface ScrapObjectResponse {
   home: Team[];
@@ -26,27 +25,27 @@ export interface ScrapObjectResponse {
 interface IStats {
   odds: {
     away: {
-      1: number,
-      x: number,
-      2: number
-    },
+      1: number;
+      x: number;
+      2: number;
+    };
     goalScored: {
       spread: {
         1_5: {
-          under: number,
-          over: number
-        },
+          under: number;
+          over: number;
+        };
         2_5: {
-          under: number,
-          over: number
-        }
-      }
-    },
+          under: number;
+          over: number;
+        };
+      };
+    };
     btts: {
-      yes: number,
-      no: number
-    }
-  },
+      yes: number;
+      no: number;
+    };
+  };
   ballPossession: number;
   shoots: number;
   shootsOnTarget: number;
@@ -61,11 +60,11 @@ interface IStats {
   attack: number;
   dangerousAttack: number;
   ht: {
-    gol: number
-  },
+    gol: number;
+  };
   ft: {
-    gol: number
-  }
+    gol: number;
+  };
 }
 export interface IMatch {
   end?: boolean;
@@ -77,26 +76,26 @@ export interface IMatch {
   away: string;
   round?: number;
   stats: {
-    home: Partial<IStats>,
-    away: Partial<IStats>,
-    btts,
-    totals
-  },
-  goals: any[],
+    home: Partial<IStats>;
+    away: Partial<IStats>;
+    btts;
+    totals;
+  };
+  goals: any[];
 
   linkedMatches?: {
-    home: IMatch[],
-    away: IMatch[]
-  }
-};
+    home: IMatch[];
+    away: IMatch[];
+  };
+}
 
-export class ScrapMatchEntity implements IMatch{
+export class ScrapMatchEntity implements IMatch {
   id: number;
 
   sourceId: string;
 
   matchDate: Date;
-  
+
   home: string;
 
   away: string;
@@ -104,27 +103,24 @@ export class ScrapMatchEntity implements IMatch{
   league: string;
 
   stats: {
-    home: IStats,
-    away: IStats,
-    
-      totals: {
-        u: number,
-        o: number
-      },
-      btts: {
-        y: number,
-        n: number
-      }
-    
+    home: IStats;
+    away: IStats;
+
+    totals: {
+      u: number;
+      o: number;
+    };
+    btts: {
+      y: number;
+      n: number;
+    };
   };
 
-  goals: Array<{minute: number, player: string, team: string}>
+  goals: Array<{ minute: number; player: string; team: string }>;
 
   round: number;
 
   calc?: ICalc;
 }
 
-
-
-  //#endregion
+//#endregion

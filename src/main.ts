@@ -19,7 +19,7 @@ server.listen(1371, function () {});
 export const wsServer = new WebSocketServer({
   httpServer: server,
 });
-const store: {[apiKey: string]: {[eventId: string]: boolean}} = {};
+const store: { [apiKey: string]: { [eventId: string]: boolean } } = {};
 wsServer.on('request', async (request) => {
   const connection = request.accept(null, request.origin);
 
@@ -54,11 +54,19 @@ async function bootstrap() {
     .addApiKey({ type: 'apiKey' }, 'x-authorization')
     .addApiKey({ type: 'apiKey' }, 'x-application')
     .setTitle('Betfair API extension')
+    .addTag('API')
+    .addTag('Auth')
+    .addTag('Events')
     .setDescription('BF')
     .setVersion('1.0')
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
   app.enableCors();
   await app.listen(3001);
 }

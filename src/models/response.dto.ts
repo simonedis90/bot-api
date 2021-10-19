@@ -1,6 +1,17 @@
-import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
+import { ApiParam, ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
 import { IMatch } from './scrap';
-import {Instruction, InstructionReport, LimitOrder} from "../services/betfair/betfair.service";
+import {
+  Instruction,
+  InstructionReport,
+  LimitOrder,
+} from '../services/betfair/betfair.service';
+
+export class LoginRequestDTO {
+  @ApiProperty({ name: 'username', type: String, required: true })
+  username: string;
+  @ApiProperty({ name: 'password', type: String, required: true })
+  password;
+}
 
 export class LoginResponseDTO {
   @ApiResponseProperty({ type: String })
@@ -117,11 +128,16 @@ export class Runner {
   metadata: Metadata;
 }
 
-export class CompetitionDTO {
+export class CompetitionItemDTO {
   @ApiProperty({ type: String })
   id: string;
   @ApiProperty({ type: String })
   name: string;
+}
+
+export class CompetitionDTO {
+  @ApiProperty({type: CompetitionItemDTO})
+  competition: CompetitionItemDTO;
 }
 
 export class MarketDTO {
@@ -327,7 +343,6 @@ export class InstructionReportDTO {
   @ApiProperty({ type: Number })
   averagePriceMatched: number;
 }
-
 
 export class LimitOrderDTO {
   @ApiProperty({ type: Number })

@@ -4,7 +4,6 @@ import { DatabaseProviders } from './providers/provider';
 @Module({
   imports: [],
   providers: [...DatabaseProviders],
-  exports: [...DatabaseProviders]
+  exports: [...DatabaseProviders],
 })
-export class DatabaseModule {
-}
+export class DatabaseModule {}

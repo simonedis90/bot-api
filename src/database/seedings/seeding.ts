@@ -76,9 +76,7 @@ export class SeedingData {
         name: config.league,
       });
       const data = await this.httpClient
-        .get<TeamEntity[]>(
-          '' + '/league?league=' + config.path,
-        )
+        .get<TeamEntity[]>('' + '/league?league=' + config.path)
         .toPromise();
       for (const team of data.data) {
         if (dbTeams.find((f) => f.name === team.name)) {

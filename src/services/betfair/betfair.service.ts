@@ -3,10 +3,12 @@ import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { AppService } from 'src/app.service';
 import {
-  EventsResponseDTO, IBet,
+  CompetitionDTO,
+  EventsResponseDTO,
+  IBet,
   MarketDTO,
-  MarketPriceDTO,
-} from 'src/models/response.dto';
+  MarketPriceDTO
+} from "src/models/response.dto";
 import { ConfigService } from '../config/config.service';
 import { HttpCustomService } from '../http-custom/http-custom.service';
 import {
@@ -89,12 +91,8 @@ export class BetfairService {
     competitionIds: string[] = [],
     today = false,
   ): Observable<EventsResponseDTO[]> {
-    const from = new Date();
-    from.setHours(0);
-    from.setMinutes(0);
-    const to = new Date();
-    to.setHours(23);
-    to.setMinutes(59);
+    const from = new Date(); from.setHours(0);from.setMinutes(0);from.setSeconds(0);
+    const to = new Date();to.setHours(23);to.setMinutes(59);to.setSeconds(59);
     const filters: any = {};
     if (types) {
       filters.eventTypeIds = types;
@@ -104,6 +102,12 @@ export class BetfairService {
     }
     if (competitionIds?.length) {
       filters.competitionIds = competitionIds;
+    }
+    if(today){
+      filters.marketStartTime = {
+        from,
+        to
+      }
     }
     const request = [
       {
@@ -124,7 +128,8 @@ export class BetfairService {
       req,
     ).pipe(
       map((f) => {
-        return f[0].result.filter((f) => {
+        return f[0].result
+          .filter((f) => {
           const d = new Date();
           d.setHours(23);
           d.setMinutes(59);
@@ -230,14 +235,13 @@ export class BetfairService {
       },
     ];
 
-    return this.HttpCustomService.post<any, bf<EventsResponseDTO>>(
+    return this.HttpCustomService.post<any, bf<CompetitionDTO>>(
       this.configService.basePath,
       request,
       {},
       req,
     ).pipe(
       map((f) => {
-        debugger;
         return f[0].result;
       }),
     );
@@ -262,10 +266,7 @@ export class BetfairService {
     ).pipe(map((f) => f));
   }
 
-  placeBet(
-    request: Request,
-    bets: Array<IBet>,
-  ) {
+  placeBet(request: Request, bets: Array<IBet>) {
     const requestBfair = bets.map((f, index) => {
       const request = {
         jsonrpc: '2.0',
@@ -354,10 +355,7 @@ export class BetfairService {
     ).pipe(map((f) => f));
   }
 
-  async betLessThan2(
-    request: Request,
-    bets: Array<IBet>,
-  ) {
+  async betLessThan2(request: Request, bets: Array<IBet>) {
     const size = bets[0].size;
     const diff = 5 - size;
     const price = bets[0].price;

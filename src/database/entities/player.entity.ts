@@ -9,6 +9,6 @@ export class PlayerEntity {
   @Column({ length: 200 })
   name: string;
 
-  @ManyToOne(() => TeamEntity, t => t.players)
+  @ManyToOne(() => TeamEntity, (t) => t.players)
   team: TeamEntity;
 }

@@ -189,7 +189,7 @@ export class EventsService {
     inPlayOnly = true,
     today = true,
     ids: string = null,
-    competitions: string[] = null
+    competitions: string[] = null,
   ): Promise<Partial<EventEntity>[]> {
     const result: Partial<EventEntity>[] = [];
 
@@ -199,7 +199,7 @@ export class EventsService {
         .toPromise();
 
       const idsArr = (ids || '').split(',');
-      if(ids){
+      if (ids) {
         today = false;
       }
       const events = events_

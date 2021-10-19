@@ -7,10 +7,14 @@ import { HttpCustomService } from './services/http-custom/http-custom.service';
 import { EventsService } from './services/events/events.service';
 import { DatabaseModule } from './database/database.module';
 import { scraperRepository } from './database/repositories/scraper';
+import { AuthController } from './auth.controller';
+import { NewController } from "./new.controller";
+import { botRepository } from "./database2_0/provider";
+import { DatabaseBotModule } from "./database2_0/database.module";
 
 @Module({
-  imports: [HttpModule, DatabaseModule],
-  controllers: [AppController],
+  imports: [HttpModule, DatabaseModule, DatabaseBotModule],
+  controllers: [AppController, AuthController, NewController],
   providers: [
     AppService,
     BetfairService,
@@ -18,8 +22,7 @@ import { scraperRepository } from './database/repositories/scraper';
     HttpCustomService,
     EventsService,
     ...scraperRepository,
+    ...botRepository
   ],
 })
-export class AppModule {
-
-}
+export class AppModule {}
