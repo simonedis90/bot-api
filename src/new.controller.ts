@@ -72,7 +72,7 @@ export class NewController {
       }
 
       const competitions = await this.bFairService.competitions(request, [type.eventType.id]).toPromise();
-
+      const history = [];
       for (const competition of competitions) {
         let oldComp = await this.competitionRepository.findOne({
           sourceId: competition.competition.id
@@ -86,7 +86,7 @@ export class NewController {
           )).raw[0];
         }
 
-        if(!oldComp.collect) continue;
+        if (!oldComp.collect) continue;
 
         const events = await this.bFairService.events(request,
           [type.eventType.id],
@@ -126,7 +126,7 @@ export class NewController {
                   dbS = (await this.selectionsRepository.insert({
                     market: dbMarket,
                     sourceName: selection.runnerName,
-                    name: ''
+                    name: ""
                   })).raw[0];
                 }
                 const price = marketPrices?.find(f => f.marketId === evMarket.marketId)
@@ -137,34 +137,34 @@ export class NewController {
 
                   const odd = await this.oddRepository.findOne({
                     sourceSelectionId: selection.selectionId.toString()
-                  })
+                  });
                   let back = Math.max(...price.availableToBack?.map(f => f.price) || [0]);
                   let lay = Math.max(...price.availableToLay?.map(f => f.price) || [0]);
                   back = Math.abs(back) === Infinity ? 0 : back;
                   lay = Math.abs(lay) === Infinity ? 0 : lay;
-                  if(!odd){
-                    this.oddRepository.insert({
+                  if (!odd) {
+                    await this.oddRepository.insert({
                       selection: dbS,
                       marketSourceId: evMarket.marketId,
                       sourceSelectionId: selection.selectionId.toString(),
                       event: dbEv,
                       back,
                       lay
-                    }).then();
+                    });
                   } else {
 
-                    this.oddHistoryRepository.insert({
+                    history.push({
                       odd,
                       oldBackValue: odd.back,
                       oldLayValue: odd.lay,
                       newBackValue: back,
                       newLayValue: lay,
                       timeStamp: new Date()
-                    }).then()
+                    })
 
                     odd.lay = lay;
                     odd.back = back;
-                    this.oddRepository.save(odd).then();
+                    await this.oddRepository.save(odd);
                   }
                 }
               }
@@ -176,6 +176,9 @@ export class NewController {
         }
 
       }
+
+
+      await this.oddHistoryRepository.insert(history);
     }
 
 
