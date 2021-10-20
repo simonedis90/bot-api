@@ -73,6 +73,7 @@ export class NewController {
 
       const competitions = await this.bFairService.competitions(request, [type.eventType.id]).toPromise();
       const history = [];
+      const x = [];
       for (const competition of competitions) {
         let oldComp = await this.competitionRepository.findOne({
           sourceId: competition.competition.id
