@@ -11,6 +11,24 @@ export class HttpCustomService {
     private configService: ConfigService,
   ) {}
 
+  public static GET_KEYS(req: Request) {
+    return  {
+      xApp: req.headers['x-application'],
+      xAuth: req.headers['x-authentication']
+    }
+  }
+
+  public static BUILD_HEADERS(config: any = {}, req: Request) {
+    let headers = config.headers;
+    headers = {
+      ...headers,
+      'X-Application': req.headers['x-application'],
+      'X-Authentication': req.headers['x-authentication'] || '',
+    };
+    config.headers = headers;
+    return config;
+  }
+
   private buildHeaders(config: any = {}, req: Request) {
     let headers = config.headers;
     headers = {

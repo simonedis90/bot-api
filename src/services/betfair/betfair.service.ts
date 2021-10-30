@@ -1,7 +1,7 @@
-import { HttpService, Inject, Injectable } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-import { AppService } from 'src/app.service';
+import { HttpService, Inject, Injectable } from "@nestjs/common";
+import { Observable } from "rxjs";
+import { map, tap } from "rxjs/operators";
+import { AppService } from "src/app.service";
 import {
   CompetitionDTO,
   EventsResponseDTO,
@@ -9,16 +9,16 @@ import {
   MarketDTO,
   MarketPriceDTO
 } from "src/models/response.dto";
-import { ConfigService } from '../config/config.service';
-import { HttpCustomService } from '../http-custom/http-custom.service';
+import { ConfigService } from "../config/config.service";
+import { HttpCustomService } from "../http-custom/http-custom.service";
 import {
   LoginResponse,
   EventTypeResponse,
   bf,
   chunkArrayInGroups,
-  bfSingle,
-} from '../../models/betfair';
-import { type } from 'os';
+  bfSingle
+} from "../../models/betfair";
+import { type } from "os";
 
 @Injectable()
 export class BetfairService {
@@ -28,14 +28,15 @@ export class BetfairService {
     private HttpCustomService: HttpCustomService,
     private appService: AppService,
     private httpClient: HttpService,
-    private configService: ConfigService,
-  ) {}
+    private configService: ConfigService
+  ) {
+  }
 
   async keepAlive(req: Request): Promise<any> {
     const result = await this.HttpCustomService.get(
       this.configService.keepAlive,
       {},
-      req,
+      req
     );
     return result;
   }
@@ -43,7 +44,7 @@ export class BetfairService {
   login(
     username: string,
     password: string,
-    req: Request,
+    req: Request
   ): Observable<LoginResponse> {
     return this.HttpCustomService.post(
       this.configService.login,
@@ -51,36 +52,36 @@ export class BetfairService {
       {
         params: {
           username,
-          password,
-        },
+          password
+        }
       },
-      req,
+      req
     ).pipe<LoginResponse>(
       tap<LoginResponse>((f) => {
-        if (f.status === 'SUCCESS') {
+        if (f.status === "SUCCESS") {
           this.connectedUsers[username] = f;
         }
         return f;
-      }),
+      })
     );
   }
 
   eventTypes(req: Request): Observable<EventTypeResponse[]> {
     const request = [
       {
-        jsonrpc: '2.0',
-        method: 'SportsAPING/v1.0/listEventTypes',
+        jsonrpc: "2.0",
+        method: "SportsAPING/v1.0/listEventTypes",
         params: {
-          filter: {},
-        },
-      },
+          filter: {}
+        }
+      }
     ];
 
     return this.HttpCustomService.post<any, bf<EventTypeResponse>>(
       this.configService.basePath,
       request,
       {},
-      req,
+      req
     ).pipe(map((f) => f[0].result));
   }
 
@@ -89,10 +90,16 @@ export class BetfairService {
     types: string[],
     inPlayOnly: boolean = undefined,
     competitionIds: string[] = [],
-    today = false,
+    today = false
   ): Observable<EventsResponseDTO[]> {
-    const from = new Date(); from.setHours(0);from.setMinutes(0);from.setSeconds(0);
-    const to = new Date();to.setHours(23);to.setMinutes(59);to.setSeconds(59);
+    const from = new Date();
+    from.setHours(0);
+    from.setMinutes(0);
+    from.setSeconds(0);
+    const to = new Date();
+    to.setHours(23);
+    to.setMinutes(59);
+    to.setSeconds(59);
     const filters: any = {};
     if (types) {
       filters.eventTypeIds = types;
@@ -103,86 +110,86 @@ export class BetfairService {
     if (competitionIds?.length) {
       filters.competitionIds = competitionIds;
     }
-    if(today){
+    if (today) {
       filters.marketStartTime = {
         from,
         to
-      }
+      };
     }
     const request = [
       {
-        jsonrpc: '2.0',
-        method: 'SportsAPING/v1.0/listEvents',
+        jsonrpc: "2.0",
+        method: "SportsAPING/v1.0/listEvents",
         params: {
           filter: filters,
-          marketProjection: ['COMPETITION'],
+          marketProjection: ["COMPETITION"]
         },
-        id: 1,
-      },
+        id: 1
+      }
     ];
 
     return this.HttpCustomService.post<any, bf<EventsResponseDTO>>(
       this.configService.basePath,
       request,
       {},
-      req,
+      req
     ).pipe(
       map((f) => {
         return f[0].result
           .filter((f) => {
-          const d = new Date();
-          d.setHours(23);
-          d.setMinutes(59);
-          if (today) {
-            return new Date(f.event.openDate) < d;
-          }
-        });
-      }),
+            const d = new Date();
+            d.setHours(23);
+            d.setMinutes(59);
+            if (today) {
+              return new Date(f.event.openDate) < d;
+            }
+          });
+      })
     );
   }
 
   markets(req: Request, events: string[] = []): Observable<MarketDTO[]> {
     const request = [
       {
-        jsonrpc: '2.0',
-        method: 'SportsAPING/v1.0/listMarketCatalogue',
+        jsonrpc: "2.0",
+        method: "SportsAPING/v1.0/listMarketCatalogue",
         params: {
           filter: {
             marketTypeCodes: [
-              'FIRST_HALF_GOALS_05',
-              'FIRST_HALF_GOALS_15',
-              'OVER_UNDER_05',
-              'OVER_UNDER_15',
-              'OVER_UNDER_25',
-              'OVER_UNDER_35',
-              'BOTH_TEAMS_TO_SCORE',
-              'MATCH_ODDS',
-              'CORRECT_SCORE',
+              "FIRST_HALF_GOALS_05",
+              "FIRST_HALF_GOALS_15",
+              "OVER_UNDER_05",
+              "OVER_UNDER_15",
+              "OVER_UNDER_25",
+              "OVER_UNDER_35",
+              "BOTH_TEAMS_TO_SCORE",
+              "MATCH_ODDS",
+              "CORRECT_SCORE"
             ],
-            eventIds: [...events.map((f) => f.toString())],
+            eventIds: [...events.map((f) => f.toString())]
           },
           maxResults: 1000,
           marketProjection: [
-            'COMPETITION',
-            'EVENT',
-            'EVENT_TYPE',
-            'RUNNER_DESCRIPTION',
-            'MARKET_START_TIME',
-          ],
+            "COMPETITION",
+            "EVENT",
+            "EVENT_TYPE",
+            "RUNNER_DESCRIPTION",
+            "MARKET_START_TIME"
+          ]
         },
-        id: 1,
-      },
+        id: 1
+      }
     ];
 
     return this.HttpCustomService.post<any, bf<MarketDTO>>(
       this.configService.basePath,
       request,
       {},
-      req,
+      req
     ).pipe(
       map((f) => {
         return f[0].result;
-      }),
+      })
     );
   }
 
@@ -190,25 +197,25 @@ export class BetfairService {
     const arrRequest = chunkArrayInGroups<string>(markets, 5).map(
       (f, index) => {
         return {
-          jsonrpc: '2.0',
-          method: 'SportsAPING/v1.0/listMarketBook',
+          jsonrpc: "2.0",
+          method: "SportsAPING/v1.0/listMarketBook",
           params: {
             marketIds: [...f.map((f) => f.toString())],
             priceProjection: {
-              priceData: ['EX_BEST_OFFERS'],
-              virtualise: 'true',
-            },
+              priceData: ["EX_BEST_OFFERS"],
+              virtualise: "true"
+            }
           },
-          id: index + 1,
+          id: index + 1
         };
-      },
+      }
     );
     const request = arrRequest;
     return this.HttpCustomService.post<any, bf<MarketPriceDTO>>(
       this.configService.basePath,
       request,
       {},
-      req,
+      req
     ).pipe(
       map((f) => {
         return (f || [])
@@ -217,77 +224,71 @@ export class BetfairService {
             pre.push(...items.result);
             return pre;
           }, []);
-      }),
+      })
     );
   }
 
   competitions(req: Request, types: string[]) {
     const request = [
       {
-        jsonrpc: '2.0',
-        method: 'SportsAPING/v1.0/listCompetitions',
+        jsonrpc: "2.0",
+        method: "SportsAPING/v1.0/listCompetitions",
         params: {
           filter: {
-            eventTypeIds: [...types],
-          },
+            eventTypeIds: [...types]
+          }
         },
-        id: 1,
-      },
+        id: 1
+      }
     ];
 
     return this.HttpCustomService.post<any, bf<CompetitionDTO>>(
       this.configService.basePath,
       request,
       {},
-      req,
+      req
     ).pipe(
       map((f) => {
         return f[0].result;
-      }),
+      })
     );
   }
 
   marketTypes(req: Request) {
     const request = [
       {
-        jsonrpc: '2.0',
-        method: 'SportsAPING/v1.0/listMarketTypes',
+        jsonrpc: "2.0",
+        method: "SportsAPING/v1.0/listMarketTypes",
         params: {
-          filter: {},
+          filter: {}
         },
-        id: 1,
-      },
+        id: 1
+      }
     ];
     return this.HttpCustomService.post<any, bf<EventTypeResponse>>(
       this.configService.basePath,
       request,
       {},
-      req,
+      req
     ).pipe(map((f) => f));
   }
 
-  placeBet(request: Request, bets: Array<IBet>) {
+  betProfit(request: Request, bets: Array<IBet>) {
     const requestBfair = bets.map((f, index) => {
       const request = {
-        jsonrpc: '2.0',
-        method: 'SportsAPING/v1.0/placeOrders',
-        params: {
-          marketId: f.marketId,
-          instructions: [
-            {
-              selectionId: f.selectionId,
-              handicap: '0',
-              side: f.side,
-              orderType: 'LIMIT',
-              limitOrder: {
-                size: f.size,
-                price: f.price,
-                persistenceType: 'PERSIST',
-              },
-            },
-          ],
+        "jsonrpc": "2.0",
+        "method": "SportsAPING/v1.0/placeOrders",
+        "params": {
+          "marketId": f.marketId,
+          "instructions": [{
+            "selectionId": f.selectionId,
+            "handicap": "0",
+            "side": "BACK",
+            "orderType": "LIMIT",
+            "limitOrder": { "price": 2, "betTargetType": "BACKERS_PROFIT", "betTargetSize": 3 }
+          }]
         },
-        id: index + 1,
+        "id": 1
       };
       return request;
     });
@@ -295,27 +296,65 @@ export class BetfairService {
       this.configService.basePath,
       requestBfair,
       {},
-      request,
+      request
     ).pipe(
       map((f) => {
         return f;
-      }),
+      })
+    );
+  }
+
+  placeBet(request: Request, bets: Array<IBet>) {
+    const requestBfair = bets.map((f, index) => {
+      const request = {
+        jsonrpc: "2.0",
+        method: "SportsAPING/v1.0/placeOrders",
+        params: {
+          marketId: f.marketId,
+          customerStrategyRef: f.strategy,
+          instructions: [
+            {
+              selectionId: f.selectionId,
+              handicap: "0",
+              side: f.side,
+              orderType: "LIMIT",
+              limitOrder: {
+                size: f.size,
+                price: f.price,
+                persistenceType: "PERSIST"
+              }
+            }
+          ]
+        },
+        id: index + 1
+      };
+      return request;
+    });
+    return this.HttpCustomService.post<any, bfSingle<BetResponse>[]>(
+      this.configService.basePath,
+      requestBfair,
+      {},
+      request
+    ).pipe(
+      map((f) => {
+        return f;
+      })
     );
   }
 
   cancelOrder(req, betId, marketId, size) {
     const request: any = {
-      jsonrpc: '2.0',
-      method: 'SportsAPING/v1.0/cancelOrders',
+      jsonrpc: "2.0",
+      method: "SportsAPING/v1.0/cancelOrders",
       params: {
         marketId: marketId,
         instructions: [
           {
-            betId: betId,
-          },
-        ],
+            betId: betId
+          }
+        ]
       },
-      id: 1,
+      id: 1
     };
     if (size) {
       request.params.instructions[0].sizeReduction = size;
@@ -324,34 +363,34 @@ export class BetfairService {
       this.configService.basePath,
       request,
       {},
-      req,
+      req
     ).pipe(
       map((f) => {
         return f;
-      }),
+      })
     );
   }
 
   replaceOrder(req, betId, marketId, newPrice) {
     const request = {
-      jsonrpc: '2.0',
-      method: 'SportsAPING/v1.0/replaceOrders',
+      jsonrpc: "2.0",
+      method: "SportsAPING/v1.0/replaceOrders",
       params: {
         marketId: marketId,
         instructions: [
           {
             betId: betId,
-            newPrice: newPrice,
-          },
-        ],
+            newPrice: newPrice
+          }
+        ]
       },
-      id: 1,
+      id: 1
     };
     return this.HttpCustomService.post<any, any>(
       this.configService.basePath,
       request,
       {},
-      req,
+      req
     ).pipe(map((f) => f));
   }
 
@@ -360,21 +399,21 @@ export class BetfairService {
     const diff = 5 - size;
     const price = bets[0].price;
     bets[0].size = 5;
-    bets[0].price = bets[0].side === 'LAY' ? 1.01 : 1000;
+    bets[0].price = bets[0].side === "LAY" ? 1.01 : 1000;
     const response = await this.placeBet(request, bets).toPromise();
-    if (response[0].result.status === 'SUCCESS') {
+    if (response[0].result.status === "SUCCESS") {
       const betId = response[0].result.instructionReports[0].betId;
       const f = await this.cancelOrder(
         request,
         betId,
         bets[0].marketId,
-        diff,
+        diff
       ).toPromise();
       const z = await this.replaceOrder(
         request,
         betId,
         bets[0].marketId,
-        price,
+        price
       ).toPromise();
       return z;
     }
@@ -387,22 +426,64 @@ export class BetfairService {
     }
     const request = [
       {
-        jsonrpc: '2.0',
-        method: 'SportsAPING/v1.0/listCurrentOrders',
+        jsonrpc: "2.0",
+        method: "SportsAPING/v1.0/listCurrentOrders",
         params: params,
-        id: 1,
-      },
+        id: 1
+      }
     ];
     return this.HttpCustomService.post<any, bf<EventTypeResponse>>(
       this.configService.basePath,
       request,
       {},
-      req,
+      req
     )
       .pipe(
         map((f) => {
           return f;
-        }),
+        })
+      )
+      .toPromise();
+  }
+
+  async listClearedOrders(req: Request, day: string): Promise<any> {
+    const from = new Date(day);
+    from.setHours(0);
+    from.setMinutes(0);
+    from.setSeconds(0);
+    const to = new Date(day);
+    to.setHours(23);
+    to.setMinutes(59);
+    to.setSeconds(59);
+
+    const params: any = {
+      betStatus: "SETTLED",
+      settledDateRange: {
+        from, to
+      },
+      groupBy: "MARKET",
+      includeItemDescription: true
+    };
+
+
+    const request = [
+      {
+        jsonrpc: "2.0",
+        method: "SportsAPING/v1.0/listClearedOrders",
+        params: params,
+        id: 1
+      }
+    ];
+    return this.HttpCustomService.post<any, bf<EventTypeResponse>>(
+      this.configService.basePath,
+      request,
+      {},
+      req
+    )
+      .pipe(
+        map((f) => {
+          return f;
+        })
       )
       .toPromise();
   }

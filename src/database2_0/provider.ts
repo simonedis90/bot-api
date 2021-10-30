@@ -8,6 +8,10 @@ import { Selection } from './entities/selection';
 import { TeamTranslations } from './entities/teamTranslations';
 import { Odd } from './entities/odds';
 import { HistoryOdd } from './entities/historyOdds';
+import { Log } from "./entities/log";
+import { Wallet } from "./entities/wallet";
+// import { WalletRow } from "./entities/walletRow";
+import { Outcome } from "./entities/outcome";
 
 export const DatabaseBotProvider = [
   {
@@ -30,6 +34,10 @@ export const DatabaseBotProvider = [
           TeamTranslations,
           Odd,
           HistoryOdd,
+          Log,
+          Wallet,
+          // WalletRow,
+          Outcome
         ],
         synchronize: true,
       }),
@@ -45,6 +53,10 @@ export const ODD = 'ODD_BOT_REPOSITORY';
 export const MARKET = 'MARKET_BOT_REPOSITORY';
 export const T_TRANSLATION = 'T_BOT_TRANSLATION_REPOSITORY';
 export const SELECTION = 'SELECTION_BOT_REPOSITORY';
+export const WALLET = 'SELECTION_BOT_WALLET';
+export const ROW = 'SELECTION_BOT_ROW';
+export const OUTCOME = 'SELECTION_BOT_OUTCOME';
+
 export const botRepository = [
   {
     provide: SPORT,
@@ -93,6 +105,21 @@ export const botRepository = [
   {
     provide: SELECTION,
     useFactory: (connection: Connection) => connection.getRepository(Selection),
+    inject: ['DATABASE_CONNECTION_BOT'],
+  },
+  {
+    provide: WALLET,
+    useFactory: (connection: Connection) => connection.getRepository(Wallet),
+    inject: ['DATABASE_CONNECTION_BOT'],
+  },
+  // {
+  //   provide: ROW,
+  //   useFactory: (connection: Connection) => connection.getRepository(WalletRow),
+  //   inject: ['DATABASE_CONNECTION_BOT'],
+  // },
+  {
+    provide: OUTCOME,
+    useFactory: (connection: Connection) => connection.getRepository(Outcome),
     inject: ['DATABASE_CONNECTION_BOT'],
   },
 ];

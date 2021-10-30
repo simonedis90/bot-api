@@ -7,18 +7,18 @@ export class HistoryOdd extends BaseEntity {
   @ManyToOne(() => Odd)
   odd: Odd;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'decimal' })
   oldLayValue: number;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'decimal' })
   newLayValue: number;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'decimal' })
   oldBackValue: number;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'decimal' })
   newBackValue: number;
 
-  @Column({ type: 'date', default: new Date() })
+  @Column({ type: 'timestamptz', default: new Date() })
   timeStamp: Date;
 }

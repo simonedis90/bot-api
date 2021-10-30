@@ -53,6 +53,7 @@ export class AppController {
 
   @ApiQuery({
     name: 'pass',
+    type: String
   })
   @Get('/load-events')
   async loadAll(@Query('pass') pass, @Req() request) {
@@ -82,6 +83,7 @@ export class AppController {
     name: 'sport',
     required: false,
     description: 'Sport id retrieve from sports',
+    type: Number
   })
   @ApiQuery({
     name: 'live',
@@ -196,7 +198,7 @@ export class AppController {
     isArray: true,
     status: 200,
   })
-  @ApiQuery({ name: 'sportIds', isArray: false, required: false })
+  @ApiQuery({ name: 'sportIds', isArray: false, required: false, type: String })
   @Get('/competitions')
   async competitions(@Req() request, @Query('sportIds') sportId) {
     const events = await this.bFairService.competitions(request, sportId || []);
@@ -216,6 +218,7 @@ export class AppController {
 
   @ApiQuery({
     name: 'pass',
+    type: String
   })
   @Get('/load-push')
   async loadAndPush(@Query('pass') pass, @Req() request) {
@@ -268,6 +271,20 @@ export class AppController {
     return nBets.concat(lBets);
   }
 
+  @ApiResponse({
+    type: BetResponseDTO,
+    isArray: true,
+    status: 200,
+  })
+  @ApiBody({
+    type: IBetDto,
+    isArray: true,
+  })
+  @Post('/place-bet2')
+  async placeBetProfit(@Req() request, @Body() bets: IBet[]) {
+    return await this.bFairService.betProfit(request, bets).toPromise();
+  }
+
   @ApiParam({
     name: 'id',
     type: String,
@@ -291,6 +308,11 @@ export class AppController {
     return await this.bFairService.listMarketBook(request, null);
   }
 
+  @Get('/cleared-orders')
+  async clearedOrders(@Req() request, @Query('day') day: string) {
+    return await this.bFairService.listClearedOrders(request, day);
+  }
+
   @Get('/alive')
   async alive(@Req() request) {
     return await this.bFairService.keepAlive(request);
@@ -298,8 +320,9 @@ export class AppController {
 
   @ApiResponse({
     type: EventTypeResponseDTO,
+    status: 200
   })
-  @Get('/sports')
+  @Get('/sports2')
   async sports(@Req() request) {
     return await this.bFairService.eventTypes(request).toPromise();
   }

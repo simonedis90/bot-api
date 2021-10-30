@@ -1,6 +1,6 @@
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { BetfairService } from '../betfair/betfair.service';
-import { chunkArrayInGroups, IBetFairLiveResult } from '../../models/betfair';
+import { chunkArrayInGroups, IBetFairLiveResult, IStatsBetfair } from "../../models/betfair";
 import {
   EventsResponseDTO,
   MarketDTO,
@@ -9,7 +9,6 @@ import {
 import { EVENT_REPOSITORY } from '../../database/repositories/scraper';
 import { Between, LessThan, MoreThan, Repository } from 'typeorm';
 import { EventEntity } from '../../database/entities/events.entity';
-import { wsServer } from '../../main';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -306,22 +305,22 @@ export class EventsService {
     }
 
     if (push) {
-      wsServer.connections.forEach((f) => {
-        f.send(JSON.stringify({ events: result }));
-      });
+      // wsServer.connections.forEach((f) => {
+      //   f.send(JSON.stringify({ events: result }));
+      // });
 
       result.forEach((item) => {
         try {
           this.liveResult(item.eventId)
             .toPromise()
             .then((value) => {
-              wsServer.connections.forEach((f) => {
-                f.send(
-                  JSON.stringify({
-                    [item.eventId]: value,
-                  }),
-                );
-              });
+              // wsServer.connections.forEach((f) => {
+              //   f.send(
+              //     JSON.stringify({
+              //       [item.eventId]: value,
+              //     }),
+              //   );
+              // });
             });
         } catch (er) {
           console.log('cannot load ' + item.eventId);
@@ -342,6 +341,13 @@ export class EventsService {
     const path = `https://ips.betfair.it/inplayservice/v1/eventTimeline?alt=json&eventId=${eventId}&locale=it&productType=EXCHANGE&regionCode=UK`;
     return this.httpClient
       .get<IBetFairLiveResult>(path)
+      .pipe(map((d) => d.data));
+  }
+
+  stats(eventId: any): Observable<IStatsBetfair> {
+    const path = `https://betfair.betstream.betgenius.com/betstream-view/footballstatistics/betfairfootballscorecentre/json?eventId=${eventId}&culture=it-IT&width=334&height=190&cb=1634815363419`;
+    return this.httpClient
+      .get<IStatsBetfair>(path)
       .pipe(map((d) => d.data));
   }
 }

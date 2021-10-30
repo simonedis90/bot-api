@@ -96,3 +96,48 @@ export interface IBetFairLiveResult {
   status: string;
   inPlayMatchStatus: string;
 }
+
+export interface IStatsBetfair {
+  Entity: string;
+  Id: string;
+  HomeGoals: number;
+  HomePenalties: number;
+  HomeYellowCards: number;
+  HomeRedCards: number;
+  HomeTotalCards: number;
+  HomeSubstitutions: number;
+  HomeShotsOnTarget: number;
+  HomeShotsOffTarget: number;
+  HomeBlockedShots: number;
+  HomeShotsOffWoodwork: number;
+  HomeTotalShots: number;
+  HomeCorners: number;
+  HomeFouls: number;
+  HomeOffsides: number;
+  HomeGoalKicks: number;
+  HomeFreeKicks: number;
+  HomeDangerousFreeKicks: number;
+  HomeThrowIns: number;
+  HomeAttacks: number;
+  HomeDangerousAttacks: number;
+  AwayGoals: number;
+  AwayPenalties: number;
+  AwayYellowCards: number;
+  AwayRedCards: number;
+  AwayTotalCards: number;
+  AwaySubstitutions: number;
+  AwayShotsOnTarget: number;
+  AwayShotsOffTarget: number;
+  AwayBlockedShots: number;
+  AwayShotsOffWoodwork: number;
+  AwayTotalShots: number;
+  AwayCorners: number;
+  AwayFouls: number;
+  AwayOffsides: number;
+  AwayGoalKicks: number;
+  AwayFreeKicks: number;
+  AwayDangerousFreeKicks: number;
+  AwayThrowIns: number;
+  AwayAttacks: number;
+  AwayDangerousAttacks: number;
+}

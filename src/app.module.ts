@@ -11,18 +11,26 @@ import { AuthController } from './auth.controller';
 import { NewController } from "./new.controller";
 import { botRepository } from "./database2_0/provider";
 import { DatabaseBotModule } from "./database2_0/database.module";
+import { MoneyController } from "./money.controller";
+import { WebsocketService } from "./services/websocket.service";
+import { BridgeService } from "./services/bridge";
 
 @Module({
   imports: [HttpModule, DatabaseModule, DatabaseBotModule],
-  controllers: [AppController, AuthController, NewController],
+  controllers: [AppController, AuthController, NewController, MoneyController],
   providers: [
     AppService,
     BetfairService,
     ConfigService,
     HttpCustomService,
     EventsService,
+    WebsocketService,
+    BridgeService,
     ...scraperRepository,
     ...botRepository
   ],
 })
-export class AppModule {}
+export class AppModule {
+  constructor(ws: WebsocketService) {
+  }
+}

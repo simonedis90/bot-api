@@ -313,6 +313,9 @@ export interface IBet {
   side: 'LAY' | 'BACK';
   price: number;
   size: number;
+  strategy: string;
+  betTargetType: "BACKERS_PROFIT";
+  betTargetSize: number;
 }
 
 export class IBetDto {
@@ -326,6 +329,12 @@ export class IBetDto {
   price: number;
   @ApiProperty({ type: Number })
   size: number;
+  @ApiProperty({nullable: true})
+  strategy: string;
+  @ApiProperty({nullable: true})
+  betTargetType: "BACKERS_PROFIT";
+  @ApiProperty({type: Number, nullable: true})
+  betTargetSize: number;
 }
 
 export class InstructionReportDTO {
