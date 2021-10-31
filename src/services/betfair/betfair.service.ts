@@ -419,8 +419,10 @@ export class BetfairService {
     }
   }
 
-  async listMarketBook(req: Request, marketId: string): Promise<any> {
-    const params: any = {};
+  async listMarketBook(req: Request, marketId: string, strategies): Promise<any> {
+    const params: any = {
+      includeItemDescription: true
+    };
     if (marketId) {
       params.marketIds = [marketId];
     }
@@ -432,6 +434,11 @@ export class BetfairService {
         id: 1
       }
     ];
+
+    if(strategies?.length) {
+      params.customerStrategyRefs = strategies;
+    }
+
     return this.HttpCustomService.post<any, bf<EventTypeResponse>>(
       this.configService.basePath,
       request,
@@ -446,7 +453,7 @@ export class BetfairService {
       .toPromise();
   }
 
-  async listClearedOrders(req: Request, day: string): Promise<any> {
+  async listClearedOrders(req: Request, day: string, strategies): Promise<any> {
     const from = new Date(day);
     from.setHours(0);
     from.setMinutes(0);
@@ -464,6 +471,11 @@ export class BetfairService {
       groupBy: "MARKET",
       includeItemDescription: true
     };
+
+    if(strategies?.length) {
+      console.log(strategies)
+      params.customerStrategyRefs = strategies;
+    }
 
 
     const request = [

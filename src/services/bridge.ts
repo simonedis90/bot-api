@@ -10,7 +10,7 @@ import { Market } from "../database2_0/entities/market";
 import { Selection } from "../database2_0/entities/selection";
 import { Odd } from "../database2_0/entities/odds";
 import { HistoryOdd } from "../database2_0/entities/historyOdds";
-import { connect } from "tls";
+import { connect, TLSSocket } from "tls";
 import { HttpCustomService } from "./http-custom/http-custom.service";
 import { Response } from "../new.controller";
 import { Ex, IBetFairLiveResult, MarketDTO, MarketPriceDTO, Runner } from "../models/response.dto";
@@ -33,6 +33,7 @@ export class BridgeService {
 
   private interval: NodeJS.Timeout;
   private interval2: NodeJS.Timeout;
+  private client: TLSSocket;
 
   constructor(private bFairService: BetfairService,
               @Inject(EVENT) public eventRepository: Repository<BetfairEvent>,
@@ -45,6 +46,21 @@ export class BridgeService {
               @Inject(HISTORY) public oddHistoryRepository: Repository<HistoryOdd>,
               private eventService: EventsService
   ) {
+    this.connect();
+  }
+
+  connect() {
+    const options = {
+      host: "stream-api.betfair.com",
+      port: 443
+    };
+
+    /*	Establish connection to the socket */
+
+    const client = connect(options, function() {
+      console.log("Connected");
+    });
+    this.client = client;
   }
 
   async events(request) {
@@ -159,18 +175,9 @@ export class BridgeService {
 
     await this.sync(req);
 
-    /*	Socket connection options */
+    this.connect();
 
-    const options = {
-      host: "stream-api.betfair.com",
-      port: 443
-    };
-
-    /*	Establish connection to the socket */
-
-    const client = connect(options, function() {
-      console.log("Connected");
-    });
+    const client = this.client;
 
     /*	Send authentication message */
 
@@ -185,7 +192,7 @@ export class BridgeService {
       console.log("updated client requests");
       this.sync(req).then(
         () => {
-          client.write(`{"op":"marketSubscription","id":3,"marketFilter":{"eventIds":[${this.mappedEvents.map(f => f.toString())}],"bettingTypes":["ODDS"],"marketTypes":[${markets.map(f => "\"" + f.marketIdentifier.toString() + "\"")}]},"marketDataFilter":{"ladderLevels": 1,"fields": ["EX_BEST_OFFERS", "EX_MARKET_DEF"]}}\r\n`);
+          // client.write(`{"op":"marketSubscription","id":3,"marketFilter":{"eventIds":[${this.mappedEvents.map(f => f.toString())}],"bettingTypes":["ODDS"],"marketTypes":[${markets.map(f => "\"" + f.marketIdentifier.toString() + "\"")}]},"marketDataFilter":{"ladderLevels": 1,"fields": ["EX_BEST_OFFERS", "EX_MARKET_DEF"]}}\r\n`);
         }
       );
     }, 5 * 60 * 1000);
@@ -233,7 +240,8 @@ export class BridgeService {
     }, 10000);
 
     /*	Subscribe to order/market stream */
-    client.write("{\"op\":\"orderSubscription\",\"orderFilter\":{\"includeOverallPosition\":false},\"segmentationEnabled\":true}\r\n");
+    client.write(`{"op":"orderSubscription", "id":1,"orderFilter":{},"segmentationEnabled":true}\r\n`);
+    // client.write(`{"op":"orderSubscription", "id":2,"orderFilter":{},"segmentationEnabled":true}\r\n`);
     const markets = await this.marketRepository.find();
 
     // client.write(`{"op":"marketSubscription","id":2,"marketFilter":{"eventIds":[${[this.mappedEvents.pop()].map(f => f.toString()).join(",")}],"bettingTypes":["ODDS"],"marketTypes":["MATCH_ODDS", "CORRECT_SCORE"]},"marketDataFilter":{"ladderLevels": 2,"fields": ["EX_BEST_OFFERS"]}}\r\n`);
@@ -256,8 +264,12 @@ export class BridgeService {
 
         }
       }
+
       if (response && Array.isArray(response.mc)) {
         for (const market of response.mc) {
+          if(!Array.isArray(market.rc)){
+            continue;
+          }
           for (const runner of market.rc) {
             const def = market.marketDefinition?.runners?.find(f => f.id === runner.id);
 
@@ -270,7 +282,6 @@ export class BridgeService {
                 odd.lay = runner.batl[0][1];
                 odd.back = runner.batb[0][1];
               } catch (e) {
-                console.log(e);
               }
 
 
@@ -279,21 +290,26 @@ export class BridgeService {
               if (def)
                 odd.active = def?.status === "ACTIVE";
 
-              console.log("process odd", JSON.stringify(odd));
+              // console.log("process odd", JSON.stringify(odd));
               this.oddChange$.next(odd);
               this.oddRepository.save(odd).then();
             }
           }
         }
+      } else if (response?.oc) {
+        console.log(data.toString());
+        console.log(response);
       }
     });
 
-    client.on("close", function(f) {
+    client.on("close", (f) => {
       console.log("Connection closed", f);
+      // this.connect();
     });
 
-    client.on("error", function(err) {
+    client.on("error", (err) => {
       console.log("Error:" + err);
+      // this.connect();
     });
 
   }

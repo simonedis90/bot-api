@@ -73,6 +73,7 @@ export interface RootObject {
 }
 
 export interface Response {
+  oc: any;
   mc: Array<RootObject>;
 
 }

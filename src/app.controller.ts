@@ -6,20 +6,20 @@ import {
   Param,
   Post,
   Query,
-  Req,
-} from '@nestjs/common';
-import { AppService } from './app.service';
-import { BetfairService } from './services/betfair/betfair.service';
-import { EventsService } from './services/events/events.service';
+  Req
+} from "@nestjs/common";
+import { AppService } from "./app.service";
+import { BetfairService } from "./services/betfair/betfair.service";
+import { EventsService } from "./services/events/events.service";
 import {
   ApiBody,
   ApiHeader,
   ApiParam,
   ApiQuery,
   ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
-import { LoginResponse } from './models/betfair';
+  ApiTags
+} from "@nestjs/swagger";
+import { LoginResponse } from "./models/betfair";
 import {
   BetResponseDTO,
   CompetitionDTO,
@@ -27,10 +27,10 @@ import {
   EventsResponseDTO,
   IBet,
   IBetDto,
-  LoginResponseDTO,
-} from './models/response.dto';
-import { match_game_new_ } from './services/helper';
-import { EventTypeResponseDTO } from '../../scraper-database/src/models/response.dto';
+  LoginResponseDTO
+} from "./models/response.dto";
+import { match_game_new_ } from "./services/helper";
+import { EventTypeResponseDTO } from "../../scraper-database/src/models/response.dto";
 
 class MatchingRequestDTO {
   lv_src: [][];
@@ -40,103 +40,104 @@ class MatchingRequestDTO {
 
 export let EVENTS;
 
-@ApiHeader({ name: 'x-application', required: true })
-@ApiHeader({ name: 'x-authentication', required: true })
-@ApiTags('Events')
+@ApiHeader({ name: "x-application", required: true })
+@ApiHeader({ name: "x-authentication", required: true })
+@ApiTags("Events")
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly bFairService: BetfairService,
-    private readonly eventsService: EventsService,
-  ) {}
+    private readonly eventsService: EventsService
+  ) {
+  }
 
   @ApiQuery({
-    name: 'pass',
+    name: "pass",
     type: String
   })
-  @Get('/load-events')
-  async loadAll(@Query('pass') pass, @Req() request) {
-    if (pass !== 'P4ssw0rd@123') {
+  @Get("/load-events")
+  async loadAll(@Query("pass") pass, @Req() request) {
+    if (pass !== "P4ssw0rd@123") {
       throw new ForbiddenException();
     }
     await this.eventsService.loadAndPush(request, false, false, false);
   }
 
-  @Post('matching')
+  @Post("matching")
   @ApiResponse({
-    status: 200,
+    status: 200
   })
   @ApiBody({
-    type: MatchingRequestDTO,
+    type: MatchingRequestDTO
   })
   matching(
-    @Body('lv_src') lv: string, // [][]
-    @Body('h_src') h: string,
-    @Body('a_src') a: string,
+    @Body("lv_src") lv: string, // [][]
+    @Body("h_src") h: string,
+    @Body("a_src") a: string
   ) {
     const result = match_game_new_(JSON.parse(lv), h, a);
     return result;
   }
 
   @ApiQuery({
-    name: 'sport',
+    name: "sport",
     required: false,
-    description: 'Sport id retrieve from sports',
+    description: "Sport id retrieve from sports",
     type: Number
   })
   @ApiQuery({
-    name: 'live',
+    name: "live",
     required: false,
     type: Boolean,
-    description: 'if tru only live events',
+    description: "if tru only live events"
   })
   @ApiQuery({
-    name: 'withOdds',
+    name: "withOdds",
     required: false,
     type: Boolean,
-    description: 'get odds',
+    description: "get odds"
   })
   @ApiQuery({
-    name: 'today',
+    name: "today",
     required: false,
     type: Boolean,
-    description: 'only today events, default true',
+    description: "only today events, default true"
   })
   @ApiQuery({
-    name: 'ids',
+    name: "ids",
     required: false,
     type: String,
-    description: 'eventId divided by , ',
+    description: "eventId divided by , "
   })
   @ApiQuery({
-    name: 'competitions',
+    name: "competitions",
     required: false,
     type: String,
-    description: 'eventId divided by , ',
+    description: "eventId divided by , "
   })
   @ApiResponse({
     type: EventsResponseDTO,
     isArray: true,
-    status: 200,
+    status: 200
   })
-  @Get('/events')
+  @Get("/events")
   async liveEvents(
     @Req() request,
-    @Query('sport') sportId,
-    @Query('live') live = false,
-    @Query('withOdds') withOdds = false,
-    @Query('today') today = true,
-    @Query('ids') ids: string = null,
-    @Query('competitions') competitions: string,
+    @Query("sport") sportId,
+    @Query("live") live = false,
+    @Query("withOdds") withOdds = false,
+    @Query("today") today = true,
+    @Query("ids") ids: string = null,
+    @Query("competitions") competitions: string
   ) {
-    if ((withOdds as any) === 'true') {
+    if ((withOdds as any) === "true") {
       withOdds = Boolean(1);
     }
-    if ((today as any) === 'true') {
+    if ((today as any) === "true") {
       today = Boolean(1);
     }
-    if ((live as any) === 'true') {
+    if ((live as any) === "true") {
       live = Boolean(1);
     }
     if (withOdds === true) {
@@ -146,7 +147,7 @@ export class AppController {
         false,
         today,
         ids,
-        competitions?.split(','),
+        competitions?.split(",")
       );
       return events;
     }
@@ -154,40 +155,40 @@ export class AppController {
       request,
       [sportId],
       live,
-      competitions?.split(','),
-      today,
+      competitions?.split(","),
+      today
     );
     return events;
   }
 
   @ApiQuery({
-    name: 'ids',
+    name: "ids",
     required: false,
     type: String,
-    description: 'eventId divided by , ',
+    description: "eventId divided by , "
   })
   @ApiResponse({
     type: EventsResponseDTO,
     isArray: true,
-    status: 200,
+    status: 200
   })
-  @Get('/live-result')
-  async liveResult(@Query('ids') ids: string) {
-    const idsArr = ids.split(',');
+  @Get("/live-result")
+  async liveResult(@Query("ids") ids: string) {
+    const idsArr = ids.split(",");
 
     return await Promise.all(
       idsArr.map((f: any) =>
-        this.eventsService.liveResult(f as any).toPromise(),
-      ),
+        this.eventsService.liveResult(f as any).toPromise()
+      )
     );
   }
 
   @ApiResponse({
     type: EventsResponseDTO,
     isArray: true,
-    status: 200,
+    status: 200
   })
-  @Get('/ev')
+  @Get("/ev")
   async ev(@Req() request) {
     const events = await this.eventsService.ev(request);
     return events;
@@ -196,11 +197,11 @@ export class AppController {
   @ApiResponse({
     type: CompetitionDTO,
     isArray: true,
-    status: 200,
+    status: 200
   })
-  @ApiQuery({ name: 'sportIds', isArray: false, required: false, type: String })
-  @Get('/competitions')
-  async competitions(@Req() request, @Query('sportIds') sportId) {
+  @ApiQuery({ name: "sportIds", isArray: false, required: false, type: String })
+  @Get("/competitions")
+  async competitions(@Req() request, @Query("sportIds") sportId) {
     const events = await this.bFairService.competitions(request, sportId || []);
     return events;
   }
@@ -208,39 +209,40 @@ export class AppController {
   @ApiResponse({
     type: EventsResponseDTO,
     isArray: true,
-    status: 200,
+    status: 200
   })
-  @Get('/sports')
+  @Get("/sports")
   async eventTypes(@Req() request) {
     const events = await this.bFairService.eventTypes(request);
     return events;
   }
 
   @ApiQuery({
-    name: 'pass',
+    name: "pass",
     type: String
   })
-  @Get('/load-push')
-  async loadAndPush(@Query('pass') pass, @Req() request) {
-    if (pass !== 'P4ssw0rd@123') {
+  @Get("/load-push")
+  async loadAndPush(@Query("pass") pass, @Req() request) {
+    if (pass !== "P4ssw0rd@123") {
       throw new ForbiddenException();
     }
     const fn = async () => {
-      for (; true; ) {
+      for (; true;) {
         try {
           await new Promise((resolve) => {
             setTimeout(() => resolve(true), 7000);
           });
           const result = await this.eventsService.loadAndPush(request);
           EVENTS = result;
-        } catch (e) {}
+        } catch (e) {
+        }
       }
     };
 
     fn().then();
 
     const take = async () => {
-      for (; true; ) {
+      for (; true;) {
         await new Promise(async (resolve) => {
           setTimeout(() => resolve(true), 1000 * 60 * 5);
           await this.bFairService.keepAlive(request);
@@ -253,67 +255,74 @@ export class AppController {
   @ApiResponse({
     type: BetResponseDTO,
     isArray: true,
-    status: 200,
+    status: 200
   })
   @ApiBody({
     type: IBetDto,
-    isArray: true,
+    isArray: true
   })
-  @Post('/place-bet')
+  @Post("/place-bet")
   async placeBet(@Req() request, @Body() bets: IBet[]) {
     const normalBets = bets.filter((f) => f.size >= 2);
     const lessThan = bets.filter((f) => f.size < 2);
-
-    const nBets = await this.bFairService
-      .placeBet(request, normalBets)
-      .toPromise();
-    const lBets = await this.bFairService.betLessThan2(request, lessThan);
+    let nBets = [];
+    if (normalBets.length) {
+      nBets = await this.bFairService
+        .placeBet(request, normalBets)
+        .toPromise();
+    }
+    let lBets = [];
+    if (lessThan.length) {
+      lBets = await this.bFairService.betLessThan2(request, lessThan);
+    }
     return nBets.concat(lBets);
   }
 
   @ApiResponse({
     type: BetResponseDTO,
     isArray: true,
-    status: 200,
+    status: 200
   })
   @ApiBody({
     type: IBetDto,
-    isArray: true,
+    isArray: true
   })
-  @Post('/place-bet2')
+  @Post("/place-bet2")
   async placeBetProfit(@Req() request, @Body() bets: IBet[]) {
     return await this.bFairService.betProfit(request, bets).toPromise();
   }
 
   @ApiParam({
-    name: 'id',
-    type: String,
+    name: "id",
+    type: String
   })
-  @Get('/markets/:id')
-  async markets(@Req() request, @Param('id') marketId) {
+  @Get("/markets/:id")
+  async markets(@Req() request, @Param("id") marketId) {
     return await this.bFairService.marketPrice(request, [marketId]).toPromise();
   }
 
   @ApiParam({
-    name: 'id',
-    type: String,
+    name: "id",
+    type: String
   })
-  @Get('/market-book/:id')
-  async marketBook(@Req() request, @Param('id') marketId) {
-    return await this.bFairService.listMarketBook(request, marketId);
+  @Get("/market-book/:id")
+  async marketBook(@Req() request, @Param("id") marketId) {
+    return await this.bFairService.listMarketBook(request, marketId, null);
   }
 
-  @Get('/market-book')
-  async marketBooks(@Req() request) {
-    return await this.bFairService.listMarketBook(request, null);
+  @Get("/market-book")
+  async marketBooks(@Req() request, @Query("st") st: string) {
+    const strategies = st ? (st).split(",") : [];
+    return await this.bFairService.listMarketBook(request, null, strategies);
   }
 
-  @Get('/cleared-orders')
-  async clearedOrders(@Req() request, @Query('day') day: string) {
-    return await this.bFairService.listClearedOrders(request, day);
+  @Get("/cleared-orders")
+  async clearedOrders(@Req() request, @Query("day") day: string, @Query("st") st: string) {
+    const strategies = st ? (st).split(",") : [];
+    return await this.bFairService.listClearedOrders(request, day, strategies);
   }
 
-  @Get('/alive')
+  @Get("/alive")
   async alive(@Req() request) {
     return await this.bFairService.keepAlive(request);
   }
@@ -322,7 +331,7 @@ export class AppController {
     type: EventTypeResponseDTO,
     status: 200
   })
-  @Get('/sports2')
+  @Get("/sports2")
   async sports(@Req() request) {
     return await this.bFairService.eventTypes(request).toPromise();
   }
