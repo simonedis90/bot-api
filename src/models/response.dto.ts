@@ -316,6 +316,7 @@ export interface IBet {
   strategy: string;
   betTargetType: "BACKERS_PROFIT";
   betTargetSize: number;
+  customerRef: string;
 }
 
 export class IBetDto {

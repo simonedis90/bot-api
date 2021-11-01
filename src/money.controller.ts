@@ -60,7 +60,13 @@ export class MoneyController {
   @Post("/:id")
   async addOutcome(@Param("id") walletId, @Body() outcome: Outcome) {
     outcome.wallet = {id: walletId} as any;
-    const result = await this.outcomeRepository.insert(outcome);
-    return result.generatedMaps[0];
+    const exists = await this.outcomeRepository.findOne({
+      betId: outcome.betId
+    });
+    if(!exists) {
+      const result = await this.outcomeRepository.insert(outcome);
+      return result.generatedMaps[0];
+    }
+    return null;
   }
 }

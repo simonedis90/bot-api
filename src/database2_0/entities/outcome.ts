@@ -23,4 +23,8 @@ export class Outcome extends BaseEntity{
   @ApiProperty({type: Date})
   @Column({type: "date"})
   date?: Date;
+
+  @ApiProperty({type: String})
+  @Column({type: "varchar", length: 100, nullable: true})
+  betId: string;
 }

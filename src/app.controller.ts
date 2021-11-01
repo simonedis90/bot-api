@@ -307,19 +307,21 @@ export class AppController {
   })
   @Get("/market-book/:id")
   async marketBook(@Req() request, @Param("id") marketId) {
-    return await this.bFairService.listMarketBook(request, marketId, null);
+    return await this.bFairService.listMarketBook(request, marketId, null, null);
   }
 
   @Get("/market-book")
-  async marketBooks(@Req() request, @Query("st") st: string) {
+  async marketBooks(@Req() request, @Query("st") st: string, @Query("or") or: string) {
     const strategies = st ? (st).split(",") : [];
-    return await this.bFairService.listMarketBook(request, null, strategies);
+    const orders = or ? (or).split(",") : [];
+    return await this.bFairService.listMarketBook(request, null, strategies, orders);
   }
 
   @Get("/cleared-orders")
-  async clearedOrders(@Req() request, @Query("day") day: string, @Query("st") st: string) {
+  async clearedOrders(@Req() request, @Query("day") day: string, @Query("st") st: string, @Query("or") or: string) {
     const strategies = st ? (st).split(",") : [];
-    return await this.bFairService.listClearedOrders(request, day, strategies);
+    const orders = or ? (or).split(",") : [];
+    return await this.bFairService.listClearedOrders(request, day, strategies, orders);
   }
 
   @Get("/alive")

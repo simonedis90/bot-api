@@ -50,6 +50,7 @@ export class BridgeService {
   }
 
   connect() {
+    this.client?.destroy();
     const options = {
       host: "stream-api.betfair.com",
       port: 443
@@ -192,7 +193,7 @@ export class BridgeService {
       console.log("updated client requests");
       this.sync(req).then(
         () => {
-          // client.write(`{"op":"marketSubscription","id":3,"marketFilter":{"eventIds":[${this.mappedEvents.map(f => f.toString())}],"bettingTypes":["ODDS"],"marketTypes":[${markets.map(f => "\"" + f.marketIdentifier.toString() + "\"")}]},"marketDataFilter":{"ladderLevels": 1,"fields": ["EX_BEST_OFFERS", "EX_MARKET_DEF"]}}\r\n`);
+          client.write(`{"op":"marketSubscription","id":3,"marketFilter":{"eventIds":[${this.mappedEvents.map(f => f.toString())}],"bettingTypes":["ODDS"],"marketTypes":[${markets.map(f => "\"" + f.marketIdentifier.toString() + "\"")}]},"marketDataFilter":{"ladderLevels": 1,"fields": ["EX_BEST_OFFERS", "EX_MARKET_DEF"]}}\r\n`);
         }
       );
     }, 5 * 60 * 1000);
@@ -206,33 +207,6 @@ export class BridgeService {
           stats
         });
       }
-      // Promise.all(this.mappedEvents.map(f => this.eventService.liveResult(f).toPromise())).then(
-      //   d => {
-      //     d.forEach(
-      //       item => {
-      //         this.liveEvents[item.eventId] = this.liveEvents[item.eventId] || {
-      //           stats: null,
-      //           live: null
-      //         };
-      //         this.liveEvents[item.eventId].live = item;
-      //         this;
-      //       }
-      //     );
-      //   }
-      // );
-      // Promise.all(this.mappedEvents.map(f => this.eventService.stats(f).toPromise())).then(
-      //   d => {
-      //     d.forEach(
-      //       item => {
-      //         this.liveEvents[item.Id] = this.liveEvents[item.Id] || {
-      //           stats: null,
-      //           live: null
-      //         };
-      //         this.liveEvents[item.Id].stats = item;
-      //       }
-      //     );
-      //   }
-      // );
     };
     await get();
     this.interval2 = setInterval(async () => {
@@ -241,10 +215,9 @@ export class BridgeService {
 
     /*	Subscribe to order/market stream */
     client.write(`{"op":"orderSubscription", "id":1,"orderFilter":{},"segmentationEnabled":true}\r\n`);
-    // client.write(`{"op":"orderSubscription", "id":2,"orderFilter":{},"segmentationEnabled":true}\r\n`);
+
     const markets = await this.marketRepository.find();
 
-    // client.write(`{"op":"marketSubscription","id":2,"marketFilter":{"eventIds":[${[this.mappedEvents.pop()].map(f => f.toString()).join(",")}],"bettingTypes":["ODDS"],"marketTypes":["MATCH_ODDS", "CORRECT_SCORE"]},"marketDataFilter":{"ladderLevels": 2,"fields": ["EX_BEST_OFFERS"]}}\r\n`);
     client.write(`{"op":"marketSubscription","id":3,"marketFilter":{"eventIds":[${this.mappedEvents.map(f => f.toString())}],"bettingTypes":["ODDS"],"marketTypes":[${markets.map(f => "\"" + f.marketIdentifier.toString() + "\"")}]},"marketDataFilter":{"ladderLevels": 1,"fields": ["EX_BEST_OFFERS", "EX_MARKET_DEF"]}}\r\n`);
     let stream = "";
     client.on("data", async (data) => {
@@ -280,10 +253,13 @@ export class BridgeService {
             if (odd) {
               try {
                 odd.lay = runner.batl[0][1];
-                odd.back = runner.batb[0][1];
               } catch (e) {
               }
 
+              try {
+                odd.back = runner.batb[0][1];
+              } catch (e) {
+              }
 
               if (market.marketDefinition)
                 odd.inPlay = market.marketDefinition.inPlay;
@@ -291,8 +267,8 @@ export class BridgeService {
                 odd.active = def?.status === "ACTIVE";
 
               // console.log("process odd", JSON.stringify(odd));
-              this.oddChange$.next(odd);
-              this.oddRepository.save(odd).then();
+              await this.oddRepository.save(odd);
+              this.oddChange$.next({ ...odd });
             }
           }
         }

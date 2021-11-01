@@ -305,6 +305,7 @@ export class BetfairService {
   }
 
   placeBet(request: Request, bets: Array<IBet>) {
+    console.log(bets);
     const requestBfair = bets.map((f, index) => {
       const request = {
         jsonrpc: "2.0",
@@ -419,7 +420,7 @@ export class BetfairService {
     }
   }
 
-  async listMarketBook(req: Request, marketId: string, strategies): Promise<any> {
+  async listMarketBook(req: Request, marketId: string, strategies, orderName): Promise<any> {
     const params: any = {
       includeItemDescription: true
     };
@@ -439,6 +440,11 @@ export class BetfairService {
       params.customerStrategyRefs = strategies;
     }
 
+    if(orderName?.length) {
+      params.customerOrderRefs = orderName;
+    }
+
+
     return this.HttpCustomService.post<any, bf<EventTypeResponse>>(
       this.configService.basePath,
       request,
@@ -453,7 +459,7 @@ export class BetfairService {
       .toPromise();
   }
 
-  async listClearedOrders(req: Request, day: string, strategies): Promise<any> {
+  async listClearedOrders(req: Request, day: string, strategies, orderName): Promise<any> {
     const from = new Date(day);
     from.setHours(0);
     from.setMinutes(0);
@@ -477,6 +483,9 @@ export class BetfairService {
       params.customerStrategyRefs = strategies;
     }
 
+    if(orderName?.length) {
+      params.customerOrderRefs = orderName;
+    }
 
     const request = [
       {
