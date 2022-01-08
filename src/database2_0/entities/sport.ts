@@ -17,4 +17,6 @@ export class Sport extends BaseEntity {
   @ApiProperty()
   @Column({ type: "decimal", default: 0, nullable: true })
   order: string;
+  @Column({type: "boolean", default: false, nullable: true})
+  collect: boolean;
 }

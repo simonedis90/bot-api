@@ -282,6 +282,7 @@ export class BetfairService {
           "marketId": f.marketId,
           "instructions": [{
             "selectionId": f.selectionId,
+            "persistenceType": "LAPSE",
             "handicap": "0",
             "side": "BACK",
             "orderType": "LIMIT",
@@ -304,6 +305,7 @@ export class BetfairService {
     );
   }
 
+
   placeBet(request: Request, bets: Array<IBet>) {
     console.log(bets);
     const requestBfair = bets.map((f, index) => {
@@ -321,8 +323,7 @@ export class BetfairService {
               orderType: "LIMIT",
               limitOrder: {
                 size: f.size,
-                price: f.price,
-                persistenceType: "PERSIST"
+                price: f.price
               }
             }
           ]
@@ -397,9 +398,12 @@ export class BetfairService {
 
   async betLessThan2(request: Request, bets: Array<IBet>) {
     const size = bets[0].size;
-    const diff = 5 - size;
+    let diff =  (bets[0].side === 'LAY' ? 100 : 5) - size;
+    if((100 - diff) < 1) {
+      diff = 99;
+    }
     const price = bets[0].price;
-    bets[0].size = 5;
+    bets[0].size = bets[0].side === 'LAY' ? 100 : 5;
     bets[0].price = bets[0].side === "LAY" ? 1.01 : 1000;
     const response = await this.placeBet(request, bets).toPromise();
     if (response[0].result.status === "SUCCESS") {
@@ -410,7 +414,7 @@ export class BetfairService {
         bets[0].marketId,
         diff
       ).toPromise();
-      const z = await this.replaceOrder(
+      const z = this.replaceOrder(
         request,
         betId,
         bets[0].marketId,

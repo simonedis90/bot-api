@@ -384,3 +384,11 @@ export class BetResponseDTO {
   @ApiProperty({ type: InstructionReportDTO, isArray: true })
   instructionReports: InstructionReportDTO[];
 }
+
+export class MessageDTO {
+  @ApiProperty({
+    type: String,
+    isArray: true
+  })
+  images: string[];
+}

@@ -66,13 +66,18 @@ export class BridgeService {
 
   async events(request) {
 
-    const competitions = await this.competitionRepository.find({
+    const sports = await this.sportRepository.find({
       collect: true
     });
+
+    const competitions = await this.competitionRepository.find({
+      collect: true
+    })
+
     const events = await this.bFairService.events(request,
-      ["1"],
+      [...sports.map(f => f.sourceId)],
       false,
-      [...competitions.map(f => f.sourceId)],
+      [],
       true
     ).toPromise();
 
@@ -104,6 +109,8 @@ export class BridgeService {
         collect: true
       }
     });
+
+
     // let dbSelections = await this.selectionsRepository.find();
 
     const competitionBySport: { [sportSourceId: string]: Competition[] } = competitions.reduce(
@@ -118,13 +125,13 @@ export class BridgeService {
       const playOnly = await this.bFairService.events(request,
         [sportSourceId],
         true,
-        [...competitionBySport[sportSourceId].map(f => f.sourceId)],
+        [],
         true
       ).toPromise();
       const events = await this.bFairService.events(request,
         [sportSourceId],
         false,
-        [...competitionBySport[sportSourceId].map(f => f.sourceId)],
+        null,
         true
       ).toPromise();
 
@@ -218,7 +225,11 @@ export class BridgeService {
 
     const markets = await this.marketRepository.find();
 
-    client.write(`{"op":"marketSubscription","id":3,"marketFilter":{"eventIds":[${this.mappedEvents.map(f => f.toString())}],"bettingTypes":["ODDS"],"marketTypes":[${markets.map(f => "\"" + f.marketIdentifier.toString() + "\"")}]},"marketDataFilter":{"ladderLevels": 1,"fields": ["EX_BEST_OFFERS", "EX_MARKET_DEF"]}}\r\n`);
+    // if (this.mappedEvents.length === 0) {
+    //   client.write(`{"op":"marketSubscription","id":3,"marketFilter":{"bettingTypes":["ODDS"],"marketTypes":[${markets.map(f => "\"" + f.marketIdentifier.toString() + "\"")}]},"marketDataFilter":{"ladderLevels": 1,"fields": ["EX_BEST_OFFERS", "EX_MARKET_DEF"]}}\r\n`);
+    //
+    // } else
+    client.write(`{"op":"marketSubscription","id":3,"marketFilter":{"eventIds":[${this.liveEvents.map(f => f.toString())}],"bettingTypes":["ODDS"],"marketTypes":[${markets.map(f => "\"" + f.marketIdentifier.toString() + "\"")}]},"marketDataFilter":{"ladderLevels": 1,"fields": ["EX_BEST_OFFERS", "EX_MARKET_DEF"]}}\r\n`);
     let stream = "";
     client.on("data", async (data) => {
       let response: Response;
@@ -240,7 +251,7 @@ export class BridgeService {
 
       if (response && Array.isArray(response.mc)) {
         for (const market of response.mc) {
-          if(!Array.isArray(market.rc)){
+          if (!Array.isArray(market.rc)) {
             continue;
           }
           for (const runner of market.rc) {
@@ -273,8 +284,8 @@ export class BridgeService {
           }
         }
       } else if (response?.oc) {
-        console.log(data.toString());
-        console.log(response);
+        // console.log(data.toString());
+        // console.log(response);
       }
     });
 
@@ -400,7 +411,7 @@ export class BridgeService {
 
               for (const selection of evMarket.runners) {
                 if (!dbMarket) {
-                  console.log(evMarket, event, dbEv, selection);
+                  /// console.log(evMarket, event, dbEv, selection);
                   continue;
                 }
                 if (dbMarket.marketIdentifier === "MATCH_ODDS") {

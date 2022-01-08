@@ -265,17 +265,18 @@ export class AppController {
   async placeBet(@Req() request, @Body() bets: IBet[]) {
     const normalBets = bets.filter((f) => f.size >= 2);
     const lessThan = bets.filter((f) => f.size < 2);
+    const promises = [];
     let nBets = [];
     if (normalBets.length) {
-      nBets = await this.bFairService
+      promises.push(this.bFairService
         .placeBet(request, normalBets)
-        .toPromise();
+        .toPromise());
     }
     let lBets = [];
     if (lessThan.length) {
-      lBets = await this.bFairService.betLessThan2(request, lessThan);
+      promises.push(this.bFairService.betLessThan2(request, lessThan));
     }
-    return nBets.concat(lBets);
+    return await Promise.all(promises);
   }
 
   @ApiResponse({

@@ -14,6 +14,7 @@ import { DatabaseBotModule } from "./database2_0/database.module";
 import { MoneyController } from "./money.controller";
 import { WebsocketService } from "./services/websocket.service";
 import { BridgeService } from "./services/bridge";
+import { TelegramService } from "./services/telegram";
 
 @Module({
   imports: [HttpModule, DatabaseModule, DatabaseBotModule],
@@ -25,12 +26,14 @@ import { BridgeService } from "./services/bridge";
     HttpCustomService,
     EventsService,
     WebsocketService,
+    TelegramService,
     BridgeService,
     ...scraperRepository,
     ...botRepository
   ],
 })
 export class AppModule {
-  constructor(ws: WebsocketService) {
+  constructor(ws: WebsocketService, te: TelegramService) {
+    te.init();
   }
 }

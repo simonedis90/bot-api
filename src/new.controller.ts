@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Injectable, Patch, Post, Req } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Injectable, Param, Patch, Post, Req } from "@nestjs/common";
 import { BetfairService } from "./services/betfair/betfair.service";
 import { ApiHeader, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Repository } from "typeorm";
@@ -235,3 +235,4 @@ export class NewController {
     await this.bridge.register(req);
   }
 }
+
