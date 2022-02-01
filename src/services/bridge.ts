@@ -69,13 +69,17 @@ export class BridgeService {
     const sports = await this.sportRepository.find({
       collect: true
     });
+    console.log('Sports length', sports.length)
 
     const competitions = await this.competitionRepository.find({
       collect: true
     })
 
     const events = await this.bFairService.events(request,
-      [...sports.map(f => f.sourceId)],
+      [
+        "1"
+        //...sports.map(f => f.sourceId)
+      ],
       false,
       [],
       true

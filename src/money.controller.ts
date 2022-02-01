@@ -128,7 +128,7 @@ export class MoneyController {
 
 `;
 
-    //this.telegram.textChannel(html);
+    this.telegram.textChannel(html);
 
     body.images.forEach(
       f => {
@@ -149,13 +149,13 @@ export class MoneyController {
       //text: `🚀 Profitto complessivo ${profit.toFixed(2)} €, profitto oggi ${daily.toFixed(2)} €, cassa totale ${cash.toFixed(2)} € - Ringraziar DSS -`
     };
 
-    transporter.sendMail(mailOptions, function(error, info) {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log("Email sent: " + info.response);
-      }
-    });
+    // transporter.sendMail(mailOptions, function(error, info) {
+    //   if (error) {
+    //     console.log(error);
+    //   } else {
+    //     console.log("Email sent: " + info.response);
+    //   }
+    // });
   }
 
 
