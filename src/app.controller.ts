@@ -16,7 +16,7 @@ import {
   ApiHeader,
   ApiParam,
   ApiQuery,
-  ApiResponse,
+  ApiResponse, ApiResponseProperty,
   ApiTags
 } from "@nestjs/swagger";
 import { LoginResponse } from "./models/betfair";
@@ -30,8 +30,13 @@ import {
   LoginResponseDTO
 } from "./models/response.dto";
 import { match_game_new_ } from "./services/helper";
-import { EventTypeResponseDTO } from "../../scraper-database/src/models/response.dto";
-
+import { EventType } from "../../scraper-database/src/models/response.dto";
+export class EventTypeResponseDTO {
+  @ApiResponseProperty({ type: EventType })
+  eventType: EventType;
+  @ApiResponseProperty({ type: Number })
+  marketCount: number;
+}
 class MatchingRequestDTO {
   lv_src: [][];
   h_src: string;
