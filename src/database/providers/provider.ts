@@ -48,9 +48,9 @@ export const DatabaseProviders = [
           EventConfigEntity,
           ProviderRewriteLeague,
           ProviderRewriteTeam,
-          ProviderEntity
+          ProviderEntity,
         ],
-        synchronize: true
-      })
-  }
+        synchronize: true,
+      }),
+  },
 ];
