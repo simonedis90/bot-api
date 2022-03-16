@@ -169,7 +169,7 @@ export class AppController {
       [sportId],
       live,
       competitions?.split(','),
-        today
+      today,
     );
     return events;
   }
@@ -269,11 +269,10 @@ export class AppController {
   })
   @Post('/place-bet')
   async placeBet(@Req() request, @Body() bets) {
-    
     let size;
-    if ( typeof(bets) === 'object' ) {
+    if (typeof bets === 'object') {
       size = bets.size;
-      bets = [bets]
+      bets = [bets];
     } else {
       size = bets[0].size;
     }

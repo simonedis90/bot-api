@@ -146,10 +146,12 @@ export class BetfairService {
             marketTypeCodes: [
               'FIRST_HALF_GOALS_05',
               'FIRST_HALF_GOALS_15',
+              'FIRST_HALF_GOALS_25',
               'OVER_UNDER_05',
               'OVER_UNDER_15',
               'OVER_UNDER_25',
               'OVER_UNDER_35',
+              'OVER_UNDER_45',
               'BOTH_TEAMS_TO_SCORE',
               'MATCH_ODDS',
               'CORRECT_SCORE',
