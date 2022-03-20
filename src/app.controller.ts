@@ -269,18 +269,10 @@ export class AppController {
   })
   @Post('/place-bet')
   async placeBet(@Req() request, @Body() bets) {
-    let size;
-    if (typeof bets === 'object') {
-      size = bets.size;
-      bets = [bets];
-    } else {
-      size = bets[0].size;
+    if (bets.size < 2) {
+      return this.bFairService.betLessThan2(request, [bets]);
     }
-
-    if (size < 2) {
-      return this.bFairService.betLessThan2(request, bets);
-    }
-    return await this.bFairService.placeBet(request, bets).toPromise();
+    return await this.bFairService.placeBet(request, [bets]).toPromise();
   }
 
   @Get('/markets/:id')
