@@ -32,6 +32,13 @@
 $ npm install
 ```
 
+## Running postgres
+
+```bash
+# run
+$ sudo docker-compose up
+```
+
 ## Running the app
 
 ```bash

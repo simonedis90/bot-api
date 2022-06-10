@@ -77,6 +77,7 @@ function list_rgx(lv_src) {
   lv = lv.replace(rgx_char, '.');
   lv = lv.replace(rgx_united, ' United ');
   lv = lv.replace(rgx_trim, '');
+
   return lv;
 }
 
@@ -89,6 +90,7 @@ function nm_rgx(nm_src) {
   nm = nm.replace(rgx_women, '$1$2 <W>');
   nm = nm.replace(rgx_united, ' United ');
   nm = nm.replace(rgx_trim, '');
+
   return nm;
 }
 
@@ -202,6 +204,8 @@ export function match_game_new_(lv_src, h_src, a_src) {
       //Logger.log([path, match])
     });
   });
+
+  console.log('|lv_src|', JSON.stringify(lv_src), 'hs', hs, 'as', as);
 
   Logger.log('HOME SELECTIONS');
   hs.some((m) => {
