@@ -12,18 +12,22 @@ import { Log } from "./entities/log";
 import { Wallet } from "./entities/wallet";
 // import { WalletRow } from "./entities/walletRow";
 import { Outcome } from "./entities/outcome";
-
+// name: process.env.dbname,
+//   user: process.env.dbuser,
+//   host: process.env.dbhost,
+//   port: process.env.dbport as any,
+//   pass: process.env.dbpass
 export const DatabaseBotProvider = [
   {
     provide: 'DATABASE_CONNECTION_BOT',
     useFactory: async () =>
       await createConnection({
         type: 'postgres',
-        host: 'localhost',
-        port: 5432,
-        username: 'root',
-        password: 'root',
-        database: 'bot',
+        host: process.env.dbhost,
+        port: process.env.dbport as any,
+        username: process.env.dbuser,
+        password: process.env.dbpass,
+        database: process.env.dbname,
         entities: [
           Sport,
           Competition,

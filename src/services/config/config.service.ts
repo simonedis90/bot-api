@@ -9,6 +9,13 @@ export class ConfigService {
   keepAlive: string;
   SCRAPER_PARSER: string;
   SCRAPER_DATABASE: string;
+  db: {
+    host: string,
+    port: number,
+    user: string,
+    pass: string,
+    name: string
+  };
   constructor() {
     const env = process.env;
     this.betFairApi = env.betFairApi;
@@ -18,5 +25,12 @@ export class ConfigService {
     this.keepAlive = env.keepAlive;
     this.SCRAPER_PARSER = env.SCRAPER_PARSER;
     this.SCRAPER_DATABASE = env.SCRAPER_DATABASE;
+    this.db = {
+      name: process.env.dbname,
+      user: process.env.dbuser,
+      host: process.env.dbhost,
+      port: process.env.dbport as any,
+      pass: process.env.dbpass
+    }
   }
 }

@@ -30,6 +30,7 @@ export class TelegramService {
 
   init() {
 
+
     const bot = new Telegraf("5075485876:AAFWyF1JV1UjYd89vTPI8CWLH3cSJpsjqj8", {
       channelMode: true
     });

@@ -459,7 +459,7 @@ export class BridgeService {
                   let lay = Math.max(...price.availableToLay?.map(f => f.price) || [0]);
                   back = Math.abs(back) === Infinity ? 0 : back;
                   lay = Math.abs(lay) === Infinity ? 0 : lay;
-                  debugger
+
                   if (!odd) {
                     await this.oddRepository.insert({
                       selection: dbS,

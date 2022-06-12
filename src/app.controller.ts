@@ -30,7 +30,13 @@ import {
   LoginResponseDTO
 } from "./models/response.dto";
 import { match_game_new_ } from "./services/helper";
-import { EventType } from "../../scraper-database/src/models/response.dto";
+export class EventType {
+  @ApiResponseProperty({ type: Number })
+  id: string;
+  @ApiResponseProperty({ type: String })
+  name: string;
+}
+
 export class EventTypeResponseDTO {
   @ApiResponseProperty({ type: EventType })
   eventType: EventType;
