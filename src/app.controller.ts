@@ -298,6 +298,11 @@ export class AppController {
     return await this.bFairService.listMarketBook(request, null);
   }
 
+  @Get('/get-placed-bets')
+  async listPlacedBets(@Req() request) {
+    return await this.bFairService.listClearedOrders(request);
+  }
+
   @Get('/alive')
   async alive(@Req() request) {
     return await this.bFairService.keepAlive(request);

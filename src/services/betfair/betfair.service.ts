@@ -422,6 +422,49 @@ export class BetfairService {
       )
       .toPromise();
   }
+
+  async listClearedOrders(req: Request): Promise<any> {
+    const date = new Date();
+
+    const from = date.setDate(date.getDate() - 1);
+    // from.setHours(0);
+    // from.setMinutes(0);
+
+    const to = new Date();
+    to.setHours(23);
+    to.setMinutes(59);
+
+    const params: any = {};
+    // {"betStatus":"SETTLED","settledDateRange":{"from":"2018-04-30T23:00:00Z","to":"2018-05-31T23:00:00Z"},"groupBy":"MARKET"}
+
+    params.betStatus = 'SETTLED';
+    params.settledDateRange = {
+      from,
+      to,
+    };
+    // params.groupBy = 'MARKET';
+
+    const request = [
+      {
+        jsonrpc: '2.0',
+        method: 'SportsAPING/v1.0/listClearedOrders',
+        params: params,
+        id: 1,
+      },
+    ];
+    return this.HttpCustomService.post<any, bf<EventTypeResponse>>(
+      this.configService.basePath,
+      request,
+      {},
+      req,
+    )
+      .pipe(
+        map((f) => {
+          return f;
+        }),
+      )
+      .toPromise();
+  }
 }
 
 export interface PriceSize {
