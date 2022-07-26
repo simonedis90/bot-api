@@ -424,6 +424,20 @@ export class BetfairService {
   }
 
   async listClearedOrders(req: Request): Promise<any> {
+    /**
+     * listClearedOrders API call,
+     *
+     * Example payload: {
+     *  "betStatus":"SETTLED",
+     *  "settledDateRange": {
+     *    "from":"2018-04-30T23:00:00Z",
+     *    "to":"2018-05-31T23:00:00Z"
+     *  },
+     *  "groupBy":"MARKET"
+     * }
+     *
+     */
+
     const date = new Date();
 
     const from = date.setDate(date.getDate() - 1);
@@ -434,24 +448,22 @@ export class BetfairService {
     to.setHours(23);
     to.setMinutes(59);
 
-    const params: any = {};
-    // {"betStatus":"SETTLED","settledDateRange":{"from":"2018-04-30T23:00:00Z","to":"2018-05-31T23:00:00Z"},"groupBy":"MARKET"}
-
-    params.betStatus = 'SETTLED';
-    params.settledDateRange = {
-      from,
-      to,
-    };
-    // params.groupBy = 'MARKET';
-
     const request = [
       {
         jsonrpc: '2.0',
         method: 'SportsAPING/v1.0/listClearedOrders',
-        params: params,
+        params: {
+          betStatus: 'SETTLED',
+          settledDateRange: {
+            from,
+            to,
+          },
+          groupBy: 'MARKET',
+        },
         id: 1,
       },
     ];
+
     return this.HttpCustomService.post<any, bf<EventTypeResponse>>(
       this.configService.basePath,
       request,
