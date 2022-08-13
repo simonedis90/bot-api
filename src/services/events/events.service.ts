@@ -1,4 +1,4 @@
-import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { BetfairService } from '../betfair/betfair.service';
 import { chunkArrayInGroups, IBetFairLiveResult } from '../../models/betfair';
 import {
@@ -12,6 +12,7 @@ import { EventEntity } from '../../database/entities/events.entity';
 import { wsServer } from '../../main';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { HttpService } from '@nestjs/axios';
 
 let EVENTS;
 
@@ -33,15 +34,15 @@ export class EventsService {
 
     const tennis = await this.betfairService.events(request, ['2']).toPromise();
 
-    const tennis_ = tennis
-      .sort(
-        (a, b) =>
-          (new Date(a.event.openDate) as any) -
-          (new Date(b.event.openDate) as any),
-      )
-      .filter(
-        (f) => new Date(f.event.openDate).getDate() === new Date().getDate(),
-      );
+    // const tennis_ = tennis
+    //   .sort(
+    //     (a, b) =>
+    //       (new Date(a.event.openDate) as any) -
+    //       (new Date(b.event.openDate) as any),
+    //   )
+    //   .filter(
+    //     (f) => new Date(f.event.openDate).getDate() === new Date().getDate(),
+    //   );
 
     const chunkTennis = chunkArrayInGroups<EventsResponseDTO>(tennis, 100);
     for (const tennisGroup of chunkTennis) {
@@ -199,7 +200,7 @@ export class EventsService {
         .toPromise();
 
       const idsArr = (ids || '').split(',');
-      if(ids){
+      if (ids) {
         today = false;
       }
       const events = events_

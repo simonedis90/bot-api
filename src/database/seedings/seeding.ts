@@ -1,4 +1,5 @@
-import { HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Inject } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { LeagueConfigEntity } from '../entities/league-config.entity';
 import { LeagueEntity } from '../entities/league.entity';
@@ -76,9 +77,7 @@ export class SeedingData {
         name: config.league,
       });
       const data = await this.httpClient
-        .get<TeamEntity[]>(
-          '' + '/league?league=' + config.path,
-        )
+        .get<TeamEntity[]>('' + '/league?league=' + config.path)
         .toPromise();
       for (const team of data.data) {
         if (dbTeams.find((f) => f.name === team.name)) {
@@ -107,7 +106,8 @@ export class SeedingData {
 
   async mapResults(): Promise<void> {
     const configs = await this.configRepository.find();
-    const matches = await this.scrapMatches.find();
+    // const matches = await this.scrapMatches.find();
+
     for (const config of configs) {
       console.log(config.league);
       try {

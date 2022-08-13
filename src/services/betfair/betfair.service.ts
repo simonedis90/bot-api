@@ -1,36 +1,32 @@
-import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { AppService } from 'src/app.service';
 import {
   EventsResponseDTO,
   MarketDTO,
   MarketPriceDTO,
 } from 'src/models/response.dto';
+import {
+  bf,
+  bfSingle,
+  chunkArrayInGroups,
+  EventTypeResponse,
+  LoginResponse,
+} from '../../models/betfair';
 import { ConfigService } from '../config/config.service';
 import { HttpCustomService } from '../http-custom/http-custom.service';
-import {
-  LoginResponse,
-  EventTypeResponse,
-  bf,
-  chunkArrayInGroups,
-  bfSingle,
-} from '../../models/betfair';
-import { type } from 'os';
 
 @Injectable()
 export class BetfairService {
   connectedUsers = {};
 
   constructor(
-    private HttpCustomService: HttpCustomService,
-    private appService: AppService,
-    private httpClient: HttpService,
+    private httpCustomService: HttpCustomService,
     private configService: ConfigService,
   ) {}
 
   async keepAlive(req: Request): Promise<any> {
-    const result = await this.HttpCustomService.get(
+    const result = await this.httpCustomService.get(
       this.configService.keepAlive,
       {},
       req,
@@ -43,24 +39,26 @@ export class BetfairService {
     password: string,
     req: Request,
   ): Observable<LoginResponse> {
-    return this.HttpCustomService.post(
-      this.configService.login,
-      null,
-      {
-        params: {
-          username,
-          password,
+    return this.httpCustomService
+      .post(
+        this.configService.login,
+        null,
+        {
+          params: {
+            username,
+            password,
+          },
         },
-      },
-      req,
-    ).pipe<LoginResponse>(
-      tap<LoginResponse>((f) => {
-        if (f.status === 'SUCCESS') {
-          this.connectedUsers[username] = f;
-        }
-        return f;
-      }),
-    );
+        req,
+      )
+      .pipe<LoginResponse>(
+        tap<LoginResponse>((f) => {
+          if (f.status === 'SUCCESS') {
+            this.connectedUsers[username] = f;
+          }
+          return f;
+        }),
+      );
   }
 
   eventTypes(req: Request): Observable<EventTypeResponse[]> {
@@ -74,12 +72,14 @@ export class BetfairService {
       },
     ];
 
-    return this.HttpCustomService.post<any, bf<EventTypeResponse>>(
-      this.configService.basePath,
-      request,
-      {},
-      req,
-    ).pipe(map((f) => f[0].result));
+    return this.httpCustomService
+      .post<any, bf<EventTypeResponse>>(
+        this.configService.basePath,
+        request,
+        {},
+        req,
+      )
+      .pipe(map((f) => f[0].result));
   }
 
   events(
@@ -117,23 +117,25 @@ export class BetfairService {
       },
     ];
 
-    return this.HttpCustomService.post<any, bf<EventsResponseDTO>>(
-      this.configService.basePath,
-      request,
-      {},
-      req,
-    ).pipe(
-      map((f) => {
-        return f[0].result.filter((f) => {
-          const d = new Date();
-          d.setHours(23);
-          d.setMinutes(59);
-          if (today) {
-            return new Date(f.event.openDate) < d;
-          }
-        });
-      }),
-    );
+    return this.httpCustomService
+      .post<any, bf<EventsResponseDTO>>(
+        this.configService.basePath,
+        request,
+        {},
+        req,
+      )
+      .pipe(
+        map((f) => {
+          return f[0].result.filter((f) => {
+            const d = new Date();
+            d.setHours(23);
+            d.setMinutes(59);
+            if (today) {
+              return new Date(f.event.openDate) < d;
+            }
+          });
+        }),
+      );
   }
 
   markets(req: Request, events: string[] = []): Observable<MarketDTO[]> {
@@ -171,16 +173,13 @@ export class BetfairService {
       },
     ];
 
-    return this.HttpCustomService.post<any, bf<MarketDTO>>(
-      this.configService.basePath,
-      request,
-      {},
-      req,
-    ).pipe(
-      map((f) => {
-        return f[0].result;
-      }),
-    );
+    return this.httpCustomService
+      .post<any, bf<MarketDTO>>(this.configService.basePath, request, {}, req)
+      .pipe(
+        map((f) => {
+          return f[0].result;
+        }),
+      );
   }
 
   marketPrice(req: Request, markets: string[]): Observable<MarketPriceDTO[]> {
@@ -201,21 +200,23 @@ export class BetfairService {
       },
     );
     const request = arrRequest;
-    return this.HttpCustomService.post<any, bf<MarketPriceDTO>>(
-      this.configService.basePath,
-      request,
-      {},
-      req,
-    ).pipe(
-      map((f) => {
-        return (f || [])
-          .filter((f) => !f.error)
-          .reduce((pre, items) => {
-            pre.push(...items.result);
-            return pre;
-          }, []);
-      }),
-    );
+    return this.httpCustomService
+      .post<any, bf<MarketPriceDTO>>(
+        this.configService.basePath,
+        request,
+        {},
+        req,
+      )
+      .pipe(
+        map((f) => {
+          return (f || [])
+            .filter((f) => !f.error)
+            .reduce((pre, items) => {
+              pre.push(...items.result);
+              return pre;
+            }, []);
+        }),
+      );
   }
 
   competitions(req: Request, types: string[]) {
@@ -232,17 +233,19 @@ export class BetfairService {
       },
     ];
 
-    return this.HttpCustomService.post<any, bf<EventsResponseDTO>>(
-      this.configService.basePath,
-      request,
-      {},
-      req,
-    ).pipe(
-      map((f) => {
-        debugger;
-        return f[0].result;
-      }),
-    );
+    return this.httpCustomService
+      .post<any, bf<EventsResponseDTO>>(
+        this.configService.basePath,
+        request,
+        {},
+        req,
+      )
+      .pipe(
+        map((f) => {
+          debugger;
+          return f[0].result;
+        }),
+      );
   }
 
   marketTypes(req: Request) {
@@ -256,12 +259,14 @@ export class BetfairService {
         id: 1,
       },
     ];
-    return this.HttpCustomService.post<any, bf<EventTypeResponse>>(
-      this.configService.basePath,
-      request,
-      {},
-      req,
-    ).pipe(map((f) => f));
+    return this.httpCustomService
+      .post<any, bf<EventTypeResponse>>(
+        this.configService.basePath,
+        request,
+        {},
+        req,
+      )
+      .pipe(map((f) => f));
   }
 
   placeBet(
@@ -298,16 +303,18 @@ export class BetfairService {
       };
       return request;
     });
-    return this.HttpCustomService.post<any, bfSingle<BetResponse>[]>(
-      this.configService.basePath,
-      requestBfair,
-      {},
-      request,
-    ).pipe(
-      map((f) => {
-        return f;
-      }),
-    );
+    return this.httpCustomService
+      .post<any, bfSingle<BetResponse>[]>(
+        this.configService.basePath,
+        requestBfair,
+        {},
+        request,
+      )
+      .pipe(
+        map((f) => {
+          return f;
+        }),
+      );
   }
 
   cancelOrder(req, betId, marketId, size) {
@@ -327,16 +334,13 @@ export class BetfairService {
     if (size) {
       request.params.instructions[0].sizeReduction = size;
     }
-    return this.HttpCustomService.post<any, any>(
-      this.configService.basePath,
-      request,
-      {},
-      req,
-    ).pipe(
-      map((f) => {
-        return f;
-      }),
-    );
+    return this.httpCustomService
+      .post<any, any>(this.configService.basePath, request, {}, req)
+      .pipe(
+        map((f) => {
+          return f;
+        }),
+      );
   }
 
   replaceOrder(req, betId, marketId, newPrice) {
@@ -354,12 +358,9 @@ export class BetfairService {
       },
       id: 1,
     };
-    return this.HttpCustomService.post<any, any>(
-      this.configService.basePath,
-      request,
-      {},
-      req,
-    ).pipe(map((f) => f));
+    return this.httpCustomService
+      .post<any, any>(this.configService.basePath, request, {}, req)
+      .pipe(map((f) => f));
   }
 
   async betLessThan2(
@@ -380,7 +381,7 @@ export class BetfairService {
     const response = await this.placeBet(request, bets).toPromise();
     if (response[0].result.status === 'SUCCESS') {
       const betId = response[0].result.instructionReports[0].betId;
-      const f = await this.cancelOrder(
+      await this.cancelOrder(
         request,
         betId,
         bets[0].marketId,
@@ -409,12 +410,13 @@ export class BetfairService {
         id: 1,
       },
     ];
-    return this.HttpCustomService.post<any, bf<EventTypeResponse>>(
-      this.configService.basePath,
-      request,
-      {},
-      req,
-    )
+    return this.httpCustomService
+      .post<any, bf<EventTypeResponse>>(
+        this.configService.basePath,
+        request,
+        {},
+        req,
+      )
       .pipe(
         map((f) => {
           return f;
@@ -464,12 +466,13 @@ export class BetfairService {
       },
     ];
 
-    return this.HttpCustomService.post<any, bf<EventTypeResponse>>(
-      this.configService.basePath,
-      request,
-      {},
-      req,
-    )
+    return this.httpCustomService
+      .post<any, bf<EventTypeResponse>>(
+        this.configService.basePath,
+        request,
+        {},
+        req,
+      )
       .pipe(
         map((f) => {
           return f;

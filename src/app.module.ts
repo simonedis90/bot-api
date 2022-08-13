@@ -1,4 +1,4 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BetfairService } from './services/betfair/betfair.service';
@@ -7,9 +7,10 @@ import { HttpCustomService } from './services/http-custom/http-custom.service';
 import { EventsService } from './services/events/events.service';
 import { DatabaseModule } from './database/database.module';
 import { scraperRepository } from './database/repositories/scraper';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [HttpModule, DatabaseModule],
+  imports: [DatabaseModule, HttpModule],
   controllers: [AppController],
   providers: [
     AppService,
@@ -20,6 +21,4 @@ import { scraperRepository } from './database/repositories/scraper';
     ...scraperRepository,
   ],
 })
-export class AppModule {
-
-}
+export class AppModule {}

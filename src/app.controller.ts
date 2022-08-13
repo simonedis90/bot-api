@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   ForbiddenException,
@@ -9,23 +8,18 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { AppService } from './app.service';
-import { BetfairService } from './services/betfair/betfair.service';
-import { EventsService } from './services/events/events.service';
 import {
-  ApiBearerAuth,
   ApiBody,
   ApiHeader,
   ApiParam,
   ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
+import { AppService } from './app.service';
 import { LoginResponse } from './models/betfair';
-import {
-  EventDTO,
-  EventsResponseDTO,
-  LoginResponseDTO,
-} from './models/response.dto';
+import { EventsResponseDTO, LoginResponseDTO } from './models/response.dto';
+import { BetfairService } from './services/betfair/betfair.service';
+import { EventsService } from './services/events/events.service';
 import { match_game_new_ } from './services/helper';
 
 class MatchingRequestDTO {
