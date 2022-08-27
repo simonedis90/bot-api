@@ -219,15 +219,24 @@ export class BetfairService {
       );
   }
 
-  competitions(req: Request, types: string[]) {
+  competitions(req: Request, types: string[], inPlay: boolean | undefined) {
+    const filters: any = {
+      eventTypeIds: [...types],
+    };
+
+    if (inPlay ?? false) {
+      filters.inPlayOnly = inPlay;
+    }
+
     const request = [
       {
         jsonrpc: '2.0',
         method: 'SportsAPING/v1.0/listCompetitions',
         params: {
-          filter: {
-            eventTypeIds: [...types],
-          },
+          filter: { ...filters },
+          // filter: {
+          //   eventTypeIds: [...types],
+          // },
         },
         id: 1,
       },

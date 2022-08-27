@@ -158,6 +158,7 @@ export class AppController {
       );
       return events;
     }
+
     const events = await this.bFairService.events(
       request,
       [sportId],
@@ -165,6 +166,7 @@ export class AppController {
       competitions?.split(','),
       today,
     );
+
     return events;
   }
 
@@ -206,9 +208,24 @@ export class AppController {
     isArray: true,
   })
   @ApiQuery({ name: 'sportIds', isArray: false, required: false })
+  @ApiQuery({
+    name: 'live',
+    required: false,
+    type: Boolean,
+    description:
+      'if true only live events, false only pre-match events, else both',
+  })
   @Get('/competitions')
-  async competitions(@Req() request, @Query('sportIds') sportId) {
-    const events = await this.bFairService.competitions(request, sportId || []);
+  async competitions(
+    @Req() request,
+    @Query('sportIds') sportId,
+    @Query('live') inPlay = undefined,
+  ) {
+    const events = await this.bFairService.competitions(
+      request,
+      sportId || [],
+      inPlay,
+    );
     return events;
   }
 
