@@ -19,7 +19,7 @@ server.listen(1371, function () {});
 export const wsServer = new WebSocketServer({
   httpServer: server,
 });
-const store: {[apiKey: string]: {[eventId: string]: boolean}} = {};
+const store: { [apiKey: string]: { [eventId: string]: boolean } } = {};
 wsServer.on('request', async (request) => {
   const connection = request.accept(null, request.origin);
 

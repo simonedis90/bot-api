@@ -132,7 +132,7 @@ export class AppController {
   async liveEvents(
     @Req() request,
     @Query('sport') sportId,
-    @Query('live') live = false,
+    @Query('live') inPlay = undefined,
     @Query('withOdds') withOdds = false,
     @Query('today') today = true,
     @Query('ids') ids: string = null,
@@ -144,9 +144,10 @@ export class AppController {
     if ((today as any) === 'true') {
       today = Boolean(1);
     }
-    if ((live as any) === 'true') {
-      live = Boolean(1);
+    if ((inPlay as any) === 'true') {
+      inPlay = Boolean(1);
     }
+
     if (withOdds === true) {
       const events = await this.eventsService.loadAndPush(
         request,
@@ -161,8 +162,8 @@ export class AppController {
 
     const events = await this.bFairService.events(
       request,
-      [sportId],
-      live,
+      sportId || [],
+      inPlay,
       competitions?.split(','),
       today,
     );
@@ -218,7 +219,7 @@ export class AppController {
   @Get('/competitions')
   async competitions(
     @Req() request,
-    @Query('sportIds') sportId,
+    @Query('sport') sportId,
     @Query('live') inPlay = undefined,
   ) {
     const events = await this.bFairService.competitions(
@@ -234,9 +235,16 @@ export class AppController {
     type: EventsResponseDTO,
     isArray: true,
   })
+  @ApiQuery({
+    name: 'live',
+    required: false,
+    type: Boolean,
+    description:
+      'if true only live events, false only pre-match events, else both',
+  })
   @Get('/sports')
-  async eventTypes(@Req() request) {
-    const events = await this.bFairService.eventTypes(request);
+  async eventTypes(@Req() request, @Query('live') inPlay = undefined) {
+    const events = await this.bFairService.eventTypes(request, inPlay);
     return events;
   }
 

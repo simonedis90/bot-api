@@ -190,7 +190,7 @@ export class EventsService {
     inPlayOnly = true,
     today = true,
     ids: string = null,
-    competitions: string[] = null
+    competitions: string[] = null,
   ): Promise<Partial<EventEntity>[]> {
     const result: Partial<EventEntity>[] = [];
 

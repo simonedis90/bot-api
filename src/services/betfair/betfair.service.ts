@@ -61,13 +61,22 @@ export class BetfairService {
       );
   }
 
-  eventTypes(req: Request): Observable<EventTypeResponse[]> {
+  eventTypes(
+    req: Request,
+    inPlay: boolean | undefined,
+  ): Observable<EventTypeResponse[]> {
+    const filters: any = {};
+
+    if (inPlay ?? false) {
+      filters.inPlayOnly = inPlay;
+    }
+
     const request = [
       {
         jsonrpc: '2.0',
         method: 'SportsAPING/v1.0/listEventTypes',
         params: {
-          filter: {},
+          filter: filters,
         },
       },
     ];
@@ -84,27 +93,33 @@ export class BetfairService {
 
   events(
     req: Request,
-    types: string[],
-    inPlayOnly: boolean = undefined,
+    types?: string[],
+    inPlay?: boolean,
     competitionIds: string[] = [],
     today = false,
   ): Observable<EventsResponseDTO[]> {
     const from = new Date();
     from.setHours(0);
     from.setMinutes(0);
+
     const to = new Date();
     to.setHours(23);
     to.setMinutes(59);
+
     const filters: any = {};
-    if (types) {
-      filters.eventTypeIds = types;
+
+    if (inPlay ?? false) {
+      filters.inPlayOnly = inPlay;
     }
-    if (inPlayOnly === true) {
-      filters.inPlayOnly = true;
+
+    if (types && types.length > 0 && types[0] !== undefined) {
+      filters.eventTypeIds = [...types];
     }
-    if (competitionIds?.length) {
+
+    if (competitionIds ?? false) {
       filters.competitionIds = competitionIds;
     }
+
     const request = [
       {
         jsonrpc: '2.0',
@@ -126,7 +141,7 @@ export class BetfairService {
       )
       .pipe(
         map((f) => {
-          return f[0].result.filter((f) => {
+          return f[0].result?.filter((f) => {
             const d = new Date();
             d.setHours(23);
             d.setMinutes(59);
@@ -220,13 +235,17 @@ export class BetfairService {
   }
 
   competitions(req: Request, types: string[], inPlay: boolean | undefined) {
-    const filters: any = {
-      eventTypeIds: [...types],
-    };
+    const filters: any = {};
 
     if (inPlay ?? false) {
       filters.inPlayOnly = inPlay;
     }
+
+    if (types && types.length > 0 && types[0] !== undefined) {
+      filters.eventTypeIds = [...types];
+    }
+
+    console.log('🚀 ~ listCompetitions', filters);
 
     const request = [
       {
