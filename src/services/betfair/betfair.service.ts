@@ -171,7 +171,7 @@ export class BetfairService {
               'OVER_UNDER_45',
               'BOTH_TEAMS_TO_SCORE',
               'MATCH_ODDS',
-              'CORRECT_SCORE',
+              // 'CORRECT_SCORE',
             ],
             eventIds: [...events.map((f) => f.toString())],
           },
@@ -507,6 +507,37 @@ export class BetfairService {
         }),
       )
       .toPromise();
+  }
+
+  // TODO: Evaluate Improvements
+  listRunners(req: Request, marketId: string) {
+    const request = [
+      {
+        jsonrpc: '2.0',
+        method: 'SportsAPING/v1.0/listMarketBook',
+        params: {
+          marketIds: [marketId], // [...f.map((f) => f.toString())]
+          priceProjection: {
+            priceData: ['EX_BEST_OFFERS'],
+            virtualise: 'true',
+          },
+        },
+        id: 1,
+      },
+    ];
+
+    return this.httpCustomService
+      .post<any, bf<MarketPriceDTO>>(
+        this.configService.basePath,
+        request,
+        {},
+        req,
+      )
+      .pipe(
+        map((f) => {
+          return f[0].result;
+        }),
+      );
   }
 }
 

@@ -181,6 +181,42 @@ export class AppController {
     type: EventsResponseDTO,
     isArray: true,
   })
+  @Get('/markets-catalogue')
+  async listMarketCatalogue(@Req() request, @Query('ids') ids: string[]) {
+    // const idsArr = ids.split(',');
+
+    const markets = await this.bFairService.markets(request, ids);
+
+    return markets;
+  }
+
+  @ApiHeader({ name: 'x-authentication', required: true })
+  @ApiQuery({
+    name: 'marketId',
+    required: true,
+    description: 'The unique id for the market',
+  })
+  @ApiResponse({
+    type: EventsResponseDTO,
+    isArray: true,
+  })
+  @Get('/runners')
+  async listRunnerBook(@Req() request, @Query('marketId') marketId) {
+    const runners = await this.bFairService.listRunners(request, marketId);
+
+    return runners;
+  }
+
+  @ApiQuery({
+    name: 'ids',
+    required: false,
+    type: String,
+    description: 'eventId divided by , ',
+  })
+  @ApiResponse({
+    type: EventsResponseDTO,
+    isArray: true,
+  })
   @Get('/live-result')
   async liveResult(@Query('ids') ids: string) {
     const idsArr = ids.split(',');
