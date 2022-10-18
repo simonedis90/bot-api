@@ -120,6 +120,8 @@ export class BetfairService {
       filters.competitionIds = competitionIds;
     }
 
+    console.log('SportsAPING/v1.0/listEvents', filters);
+
     const request = [
       {
         jsonrpc: '2.0',
@@ -169,6 +171,7 @@ export class BetfairService {
               'OVER_UNDER_25',
               'OVER_UNDER_35',
               'OVER_UNDER_45',
+              'OVER_UNDER_55',
               'BOTH_TEAMS_TO_SCORE',
               'MATCH_ODDS',
               // 'CORRECT_SCORE',
