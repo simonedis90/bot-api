@@ -18,6 +18,8 @@ import { HttpCustomService } from '../http-custom/http-custom.service';
 
 @Injectable()
 export class BetfairService {
+  private basketEventTypeIds = '7522';
+
   connectedUsers = {};
 
   constructor(
@@ -120,7 +122,9 @@ export class BetfairService {
       filters.competitionIds = competitionIds;
     }
 
-    console.log('SportsAPING/v1.0/listEvents', filters);
+    const basketEventTypeIdsRequested =
+      filters.eventTypeIds?.length === 1 &&
+      filters.eventTypeIds[0] === this.basketEventTypeIds;
 
     const request = [
       {
@@ -147,7 +151,9 @@ export class BetfairService {
             const d = new Date();
             d.setHours(23);
             d.setMinutes(59);
+
             if (today) {
+              if (basketEventTypeIdsRequested) return f.event; // Force return for Basket (Nba) Events
               return new Date(f.event.openDate) < d;
             }
           });
