@@ -172,6 +172,7 @@ export class BetfairService {
               'OVER_UNDER_35',
               'OVER_UNDER_45',
               'OVER_UNDER_55',
+              'OVER_UNDER_65',
               'BOTH_TEAMS_TO_SCORE',
               'MATCH_ODDS',
               // 'CORRECT_SCORE',
