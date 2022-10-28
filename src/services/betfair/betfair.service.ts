@@ -169,7 +169,7 @@ export class BetfairService {
         params: {
           filter: {
             marketTypeCodes: [
-              'FIRST_HALF_GOALS_05',
+              'FIRST_HALF_GOALS_05', // common & soccer
               'FIRST_HALF_GOALS_15',
               'FIRST_HALF_GOALS_25',
               'OVER_UNDER_05',
@@ -181,7 +181,10 @@ export class BetfairService {
               'OVER_UNDER_65',
               'BOTH_TEAMS_TO_SCORE',
               'MATCH_ODDS',
+              'HALF_TIME',
               // 'CORRECT_SCORE',
+
+              'SET_BETTING', // tennis
             ],
             eventIds: [...events.map((f) => f.toString())],
           },

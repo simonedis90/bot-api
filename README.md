@@ -32,6 +32,10 @@
 $ npm install
 ```
 
+## Documentation
+
+[MarketTypeCodes](https://github.com/demircimurat/SharpFair/blob/master/BetfairEnums.cs)
+
 ## Running postgres
 
 ```bash
