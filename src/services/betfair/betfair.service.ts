@@ -19,6 +19,7 @@ import { HttpCustomService } from '../http-custom/http-custom.service';
 @Injectable()
 export class BetfairService {
   private basketEventTypeIds = '7522';
+  private americanFootballEventTypeIds = '6423';
 
   connectedUsers = {};
 
