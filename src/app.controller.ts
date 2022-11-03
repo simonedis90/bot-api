@@ -20,7 +20,7 @@ import { LoginResponse } from './models/betfair';
 import { EventsResponseDTO, LoginResponseDTO } from './models/response.dto';
 import { BetfairService } from './services/betfair/betfair.service';
 import { EventsService } from './services/events/events.service';
-import { match_game_new_ } from './services/helper';
+import { match_game_new_ } from './services/bfbot-helper';
 
 class MatchingRequestDTO {
   lv_src: [][];
