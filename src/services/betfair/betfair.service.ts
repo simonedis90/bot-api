@@ -18,6 +18,7 @@ import { HttpCustomService } from '../http-custom/http-custom.service';
 
 @Injectable()
 export class BetfairService {
+  private tennisEventTypeIds = '2';
   private basketEventTypeIds = '7522';
   private americanFootballEventTypeIds = '6423';
 
@@ -123,6 +124,10 @@ export class BetfairService {
       filters.competitionIds = competitionIds;
     }
 
+    const tennisEventTypeIdsRequested =
+      filters.eventTypeIds?.length === 1 &&
+      filters.eventTypeIds[0] === this.tennisEventTypeIds;
+
     const basketEventTypeIdsRequested =
       filters.eventTypeIds?.length === 1 &&
       filters.eventTypeIds[0] === this.basketEventTypeIds;
@@ -154,9 +159,16 @@ export class BetfairService {
             d.setMinutes(59);
 
             if (today) {
-              if (basketEventTypeIdsRequested) return f.event; // Force return for Basket (Nba) Events
               return new Date(f.event.openDate) < d;
+
+              // if (basketEventTypeIdsRequested) return f.event; // Force return for Basket (Nba) Events
+
+              // if (tennisEventTypeIdsRequested || basketEventTypeIdsRequested) {
+              //   return f.event; // Force return for Basket (Nba) Events (or Tennis)*
+              // }
             }
+
+            return f.event; // All Events
           });
         }),
       );

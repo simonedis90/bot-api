@@ -98,7 +98,7 @@ export class AppController {
     name: 'live',
     required: false,
     type: Boolean,
-    description: 'if tru only live events',
+    description: 'if true only live events',
   })
   @ApiQuery({
     name: 'withOdds',
@@ -110,7 +110,7 @@ export class AppController {
     name: 'today',
     required: false,
     type: Boolean,
-    description: 'only today events, default true',
+    description: 'only today events, default true. (BE-side filter)',
   })
   @ApiQuery({
     name: 'ids',
