@@ -141,9 +141,10 @@ export class AppController {
     if ((withOdds as any) === 'true') {
       withOdds = Boolean(1);
     }
-    if ((today as any) === 'true') {
-      today = Boolean(1);
-    }
+
+    if ((today as any) === 'true') today = Boolean(1);
+    if ((today as any) === 'false') today = Boolean(0);
+
     if ((inPlay as any) === 'true') {
       inPlay = Boolean(1);
     }

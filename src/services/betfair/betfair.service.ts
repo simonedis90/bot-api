@@ -124,13 +124,13 @@ export class BetfairService {
       filters.competitionIds = competitionIds;
     }
 
-    const tennisEventTypeIdsRequested =
-      filters.eventTypeIds?.length === 1 &&
-      filters.eventTypeIds[0] === this.tennisEventTypeIds;
+    // const tennisEventTypeIdsRequested =
+    //   filters.eventTypeIds?.length === 1 &&
+    //   filters.eventTypeIds[0] === this.tennisEventTypeIds;
 
-    const basketEventTypeIdsRequested =
-      filters.eventTypeIds?.length === 1 &&
-      filters.eventTypeIds[0] === this.basketEventTypeIds;
+    // const basketEventTypeIdsRequested =
+    //   filters.eventTypeIds?.length === 1 &&
+    //   filters.eventTypeIds[0] === this.basketEventTypeIds;
 
     const request = [
       {
