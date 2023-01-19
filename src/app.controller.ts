@@ -134,7 +134,7 @@ export class AppController {
     @Query('sport') sportId,
     @Query('live') inPlay = undefined,
     @Query('withOdds') withOdds = false,
-    @Query('today') today = false,
+    @Query('today') today = true,
     @Query('ids') ids: string = null,
     @Query('competitions') competitions: string,
   ) {
