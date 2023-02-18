@@ -1,4 +1,4 @@
-export function chunkArrayInGroups<T>(arr, size): Array<T[]> {
+export function chunkArrayInGroups<T>(arr, size): T[][] {
   const myArray = [];
   for (let i = 0; i < arr.length; i += size) {
     myArray.push(arr.slice(i, i + size));
