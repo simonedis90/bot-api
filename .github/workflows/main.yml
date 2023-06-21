@@ -18,4 +18,4 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}  
     - name: Push the Docker image
-      run: docker push oddastudio/oddastudio/bot-api:main
+      run: docker push oddastudio/bot-api:main
