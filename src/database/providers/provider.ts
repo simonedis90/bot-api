@@ -25,11 +25,11 @@ export const DatabaseProviders = [
     useFactory: async () =>
       await createConnection({
         type: 'postgres',
-        host: 'localhost',
-        port: 5432,
-        username: 'root',
-        password: 'root',
-        database: 'test_db',
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
+        username: process.env.DB_HOST || 'addo',
+        password: process.env.DB_PASSWORD || 'wo23Kiep_;34',
+        database: process.env.DB_NAME || 'bot',
         entities: [
           SeasonEntity,
           TeamEntity,
