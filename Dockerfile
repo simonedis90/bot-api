@@ -1,10 +1,10 @@
 FROM node:12
-WORKDIR /scraper-project/bot-api
-ADD package.json /package.json
-RUN npm install && npm build
-ADD . /scraper-project/bot-api
+WORKDIR /usr/app
+
+COPY . /usr/app/
+RUN npm install && npm run build
 
 EXPOSE 3001
 
-CMD ["npm","run","start"]
+CMD ["node", "dist/main.js"]
 
