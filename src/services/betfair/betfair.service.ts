@@ -223,6 +223,56 @@ export class BetfairService {
       );
   }
 
+  eventsFromMarkets(req: Request, markets: string[] = []): Observable<MarketDTO[]> {
+    const request = [
+      {
+        jsonrpc: '2.0',
+        method: 'SportsAPING/v1.0/listMarketCatalogue',
+        params: {
+          filter: {
+            marketTypeCodes: [
+              'FIRST_HALF_GOALS_05', // common & soccer
+              'FIRST_HALF_GOALS_15',
+              'FIRST_HALF_GOALS_25',
+              'OVER_UNDER_05',
+              'OVER_UNDER_15',
+              'OVER_UNDER_25',
+              'OVER_UNDER_35',
+              'OVER_UNDER_45',
+              'OVER_UNDER_55',
+              'OVER_UNDER_65',
+              'BOTH_TEAMS_TO_SCORE',
+              'MATCH_ODDS',
+              'HALF_TIME',
+              'CORRECT_SCORE',
+              'HANDICAP',
+
+              'SET_BETTING', // tennis
+            ],
+            marketIds: [...markets.map((f) => f.toString())],
+          },
+          maxResults: 1000,
+          marketProjection: [
+            'COMPETITION',
+            'EVENT',
+            'EVENT_TYPE',
+            'RUNNER_DESCRIPTION',
+            'MARKET_START_TIME',
+          ],
+        },
+        id: 1,
+      },
+    ];
+
+    return this.httpCustomService
+      .post<any, bf<MarketDTO>>(this.configService.basePath, request, {}, req)
+      .pipe(
+        map((f) => {
+          return f[0].result;
+        }),
+      );
+  }
+
   marketPrice(req: Request, markets: string[]): Observable<MarketPriceDTO[]> {
     const arrRequest = chunkArrayInGroups<string>(markets, 5).map(
       (f, index) => {

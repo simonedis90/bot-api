@@ -178,15 +178,26 @@ export class AppController {
     type: String,
     description: 'eventId divided by , ',
   })
+  @ApiQuery({
+    name: 'marketIds',
+    required: false,
+    type: String,
+    description: 'marketId divided by , ',
+  })
   @ApiResponse({
     type: EventsResponseDTO,
     isArray: true,
   })
   @Get('/markets-catalogue')
-  async listMarketCatalogue(@Req() request, @Query('ids') ids: string[]) {
-    // const idsArr = ids.split(',');
+  async listMarketCatalogue(@Req() request, @Query('ids') ids: string[], @Query('marketIds') marketIds: string[]) {
 
-    const markets = await this.bFairService.markets(request, ids);
+    let markets: any;
+
+    if (marketIds) {
+      markets = await this.bFairService.eventsFromMarkets(request, marketIds);  // for Event Hub
+    } else {
+      markets = await this.bFairService.markets(request, ids);
+    }
 
     return markets;
   }
