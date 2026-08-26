@@ -1,12 +1,11 @@
+import { Column, Entity } from 'typeorm';
 import {
   EventDTO,
   ICalc,
   MarketDTO,
   MarketPriceDTO,
-  RunnerMarketPriceDTO,
 } from 'src/models/response.dto';
 import { IMatch } from 'src/models/scrap';
-import { Column, Entity } from 'typeorm';
 import { BaseEntity } from './baseEntity';
 
 @Entity()

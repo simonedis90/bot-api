@@ -18,15 +18,15 @@ export class LeagueEntity {
   @Column({ length: 150, default: '' })
   nation: string;
 
-  @OneToMany(() => TeamEntity, l => l.league)
+  @OneToMany(() => TeamEntity, (l) => l.league)
   teams: TeamEntity[];
 
-  @Column({type: 'varchar', length: 150, nullable: true})
+  @Column({ type: 'varchar', length: 150, nullable: true })
   mapping: string;
 
-  @Column({type: 'int', default: -1, nullable: true})
+  @Column({ type: 'int', default: -1, nullable: true })
   providerId: number;
 
-  @Column({type: 'boolean', default: false, nullable: true})
+  @Column({ type: 'boolean', default: false, nullable: true })
   enabled: boolean;
 }

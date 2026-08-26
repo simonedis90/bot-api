@@ -1,7 +1,7 @@
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { MatchEntity } from './match.entity';
 import { PlayerEntity } from './player.entity';
 import { TeamEntity } from './team.entity';
-import { MatchEntity } from './match.entity';
 
 @Entity()
 export class GoalEntity {
