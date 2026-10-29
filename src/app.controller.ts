@@ -21,6 +21,7 @@ import { EventsResponseDTO, LoginResponseDTO } from './models/response.dto';
 import { BetfairService } from './services/betfair/betfair.service';
 import { EventsService } from './services/events/events.service';
 import { match_game_new_ } from './services/helper';
+import { queryIds } from './services/query-ids';
 
 class MatchingRequestDTO {
   lv_src: [][];
@@ -189,14 +190,20 @@ export class AppController {
     isArray: true,
   })
   @Get('/markets-catalogue')
-  async listMarketCatalogue(@Req() request, @Query('ids') ids: string[], @Query('marketIds') marketIds: string[]) {
-
+  async listMarketCatalogue(
+    @Req() request,
+    @Query('ids') ids: string | string[],
+    @Query('marketIds') marketIds: string | string[],
+  ) {
     let markets: any;
 
     if (marketIds) {
-      markets = await this.bFairService.eventsFromMarkets(request, marketIds);  // for Event Hub
+      markets = await this.bFairService.eventsFromMarkets(
+        request,
+        queryIds(marketIds),
+      ); // for Event Hub
     } else {
-      markets = await this.bFairService.markets(request, ids);
+      markets = await this.bFairService.markets(request, queryIds(ids));
     }
 
     return markets;
